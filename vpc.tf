@@ -6,3 +6,4 @@ resource "aws_vpc" "vpc-us-east-1" {
         Company = "compan.com"
     }
 }
+

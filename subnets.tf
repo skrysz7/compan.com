@@ -1,39 +1,21 @@
-resource "aws_subnet" "private-us-east-1a" {
-  vpc_id = aws_vpc.vpc-us-east-1.id
-  availability_zone = "us-east-1a"
-  cidr_block = "10.0.1.0/24"
+resource "aws_subnet" "private-us-east-1" {
+  vpc_id            = aws_vpc.vpc-us-east-1.id
+  count             = 2
+  availability_zone = element(var.availability_zone, count.index)
+  cidr_block        = element(var.private_subnets_cidr, count.index)
 
   tags = {
-    Name = "private-subnet-east-1a"
+    Name = element(var.private_subnet_names, count.index)
   }
 }
 
-resource "aws_subnet" "private-us-east-1b" {
-  vpc_id = aws_vpc.vpc-us-east-1.id
-  availability_zone = "us-east-1b"
-  cidr_block = "10.0.2.0/24"
+resource "aws_subnet" "public-us-east-1" {
+  vpc_id            = aws_vpc.vpc-us-east-1.id
+  count             = 2
+  availability_zone = element(var.availability_zone, count.index)
+  cidr_block        = element(var.public_subnets_cidr, count.index)
 
   tags = {
-    Name = "private-subnet-east-1b"
-  }
-}
-
-resource "aws_subnet" "public-us-east-1a" {
-  vpc_id = aws_vpc.vpc-us-east-1.id
-  availability_zone = "us-east-1a"
-  cidr_block = "10.0.3.0/24"
-
-  tags = {
-    Name = "public-subnet-east-1a"
-  }
-}
-
-resource "aws_subnet" "public-us-east-1b" {
-  vpc_id = aws_vpc.vpc-us-east-1.id
-  availability_zone = "us-east-1b"
-  cidr_block = "10.0.4.0/24"
-
-  tags = {
-    Name = "public-subnet-east-1b"
+    Name = element(var.public_subnet_names, count.index)
   }
 }
