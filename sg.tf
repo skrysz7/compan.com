@@ -21,14 +21,14 @@ resource "aws_security_group" "dynamicsg" {
 }
 
 
-resource "aws_security_group" "test_with_eip" {
-  name = "test_with_eip"
-  ingress {
-    from_port = 443
-    to_port = 443
-    protocol = "tcp"
-    cidr_blocks = ["${aws_eip.eip.private_ip}/32"]
-  }
-}
+# resource "aws_security_group" "test_with_eip" {
+#   name = "test_with_eip"
+#   ingress {
+#     from_port = 443
+#     to_port = 443
+#     protocol = "tcp"
+#     cidr_blocks = ["${aws_eip.eip.private_ip}/32"]
+#   }
+# }
 
 
