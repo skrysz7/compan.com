@@ -2,6 +2,8 @@ resource "aws_instance" "dc" {
   instance_type = "t3.medium"
   ami           = data.aws_ami.win2022.id
 
+
+
 # ignore all changes made manually
 #   lifecycle {
 #     ignore_changes = all
