@@ -21,6 +21,8 @@ resource "aws_security_group" "dynamicsg" {
 }
 
 
+
+
 # resource "aws_security_group" "test_with_eip" {
 #   name = "test_with_eip"
 #   ingress {

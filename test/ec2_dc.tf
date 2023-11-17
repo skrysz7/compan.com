@@ -10,6 +10,38 @@ resource "aws_instance" "dc" {
 #   }
 }
 
+resource "aws_ssm_document" "echo" {
+  name          = "echo"
+  document_type = "Command"
+  content       = <<DOC
+{
+    "schemaVersion": "1.2",
+    "description": "Add 'Hello' to c:\hello.txt.",
+    "parameters": {
+    },
+    "runtimeConfig": {
+      "aws:runShellScript": {
+        "properties": [
+          {
+            "id": "0.aws:runShellScript",
+            "runCommand": ["echo \"Hello!\" > c:\hello.txt"]
+          }
+        ]
+      }
+    }
+  }
+DOC
+}
+
+resource "aws_ssm_association" "example" {
+  name = aws_ssm_document.echo.name
+
+  targets {
+    key    = "InstanceIds"
+    values = [aws_instance.dc.id]
+  }
+}
+
 # resource "aws_instance" "ec2" {
 #   ami = data.aws_ami.win2022.id
 #   for_each = {
