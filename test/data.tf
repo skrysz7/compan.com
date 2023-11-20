@@ -8,10 +8,10 @@ data "aws_ami" "win2022" {
   }
 }
 
-data "aws_ami" "dc-compan-com" {
-  owners = ["self"]
-  filter {
-    name   = "name"
-    values = ["windows-domain-controller"]
-  }
-}
+# data "aws_ami" "dc-compan-com" {
+#   owners = ["self"]
+#   filter {
+#     name   = "name"
+#     values = ["windows-domain-controller"]
+#   }
+# }
