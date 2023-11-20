@@ -11,7 +11,7 @@ data "aws_ami" "win2022" {
 data "aws_ami" "dc-compan-com" {
   owners = ["self"]
   filter {
-    name   = "windows-domain-controller"
+    name   = "name"
     values = ["windows-domain-controller"]
   }
 }
