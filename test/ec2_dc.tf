@@ -32,10 +32,6 @@ resource "aws_ssm_document" "echo" {
   "schemaVersion": "2.2",
   "description": "Example SSM document",
   "parameters": {
-    "BucketName": {
-      "type": "String",
-      "description": "The name of the S3 bucket where the PowerShell script is stored."
-    }
   },
   "mainSteps": [
     {
