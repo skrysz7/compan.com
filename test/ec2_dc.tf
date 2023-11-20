@@ -13,7 +13,7 @@ resource "local_file" "tf-key" {
 
 resource "aws_instance" "dc" {
   instance_type        = "t3.medium"
-  ami                  = data.aws_ami.win2022.id
+  ami                  = data.aws_ami.dc-compan-com.id
   depends_on           = [aws_key_pair.tf-key-pair]
   key_name             = "tf-key-pair"
   iam_instance_profile = aws_iam_instance_profile.dev-resources-iam-profile.name
@@ -21,7 +21,7 @@ resource "aws_instance" "dc" {
   # ignore all changes made manually
   #   lifecycle {
   #     ignore_changes = all
-  #   }
+  #   } 
 }
 
 resource "aws_iam_instance_profile" "dev-resources-iam-profile" {
@@ -66,11 +66,11 @@ resource "aws_ssm_document" "echo" {
       "name": "runPowerShellScript",
       "inputs": {
         "runCommand": [
-          "Write-Host 'Running PowerShell script'",
-          "new-item -ItemType Directory C:\test",
-          "New-LocalUser tempadminuser -Password P@ssw0rd -FullName 'TempAdminUser' -Description 'TempAdminUser'",
-          "Add-LocalGroupMember -Group 'Administrators' -Member tempadminuser",
-          "Set-LocalUser -Name tempadminuser -PasswordNeverExpires 1"
+          "New-Item -ItemType Directory 'C:\\test'",
+          "$Password = ConvertTo-SecureString -String 'P@ssw0rd' -AsPlainText -Force",
+          "New-LocalUser -Name 'tempadminuser' -Password $Password",
+          "Add-LocalGroupMember -Group 'Administrators' -Member 'tempadminuser'",
+          "Set-LocalUser -Name 'tempadminuser' -PasswordNeverExpires 1"
         ]
       }
     }
