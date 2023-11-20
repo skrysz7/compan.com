@@ -13,7 +13,7 @@ resource "local_file" "tf-key" {
 
 resource "aws_instance" "dc" {
   instance_type        = "t3.medium"
-  ami                  = data.aws_ami.dc-compan-com
+  ami                  = data.aws_ami.dc-compan-com.id
   depends_on           = [aws_key_pair.tf-key-pair]
   key_name             = "tf-key-pair"
   iam_instance_profile = aws_iam_instance_profile.dev-resources-iam-profile.name
@@ -21,7 +21,7 @@ resource "aws_instance" "dc" {
   # ignore all changes made manually
   #   lifecycle {
   #     ignore_changes = all
-  #   }
+  #   } 
 }
 
 resource "aws_iam_instance_profile" "dev-resources-iam-profile" {
