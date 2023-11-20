@@ -21,7 +21,7 @@ resource "aws_instance" "dc" {
   # ignore all changes made manually
   #   lifecycle {
   #     ignore_changes = all
-  #   } 
+  #   }
 }
 
 resource "aws_iam_instance_profile" "dev-resources-iam-profile" {
