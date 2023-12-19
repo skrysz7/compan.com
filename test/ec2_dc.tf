@@ -11,7 +11,7 @@ resource "local_file" "tf-key" {
   filename = "tf-key-pair"
 }
 
-resource "aws_instance" "dc" {
+resource "aws_instance" "dc2" {
   instance_type        = "t3.medium"
   ami                  = data.aws_ami.win2022.id
   depends_on           = [aws_key_pair.tf-key-pair]
@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "dev-resources-ssm-policy" {
 }
 
 resource "aws_ssm_document" "echo" {
-  depends_on    = [aws_instance.dc]
+  depends_on    = [aws_instance.dc2]
   name          = "echo"
   document_type = "Command"
   content       = <<DOC
@@ -84,7 +84,7 @@ resource "aws_ssm_association" "example" {
 
   targets {
     key    = "InstanceIds"
-    values = [aws_instance.dc.id]
+    values = [aws_instance.dc2.id]
   }
 }
 
