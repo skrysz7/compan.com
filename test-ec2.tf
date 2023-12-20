@@ -5,7 +5,7 @@ module "ec2-windows" {
   hostname  = "testsrv456"
   env       = "TEST"
   vpc_id    = aws_vpc.vpc-us-east-1.id
-  subnet_id = local.public_subnet1a[0]
+  subnet_id = aws_subnet.public-us-east-1[0]
   depends_on = [
     aws_kms_key.key
   ]
