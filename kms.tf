@@ -17,7 +17,7 @@ resource "aws_kms_key" "key" {
                 },
                 "Action": "kms:*",
                 "Resource": "*"
-            }
+            }]
     } 
     POLICY
 }
