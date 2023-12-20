@@ -3,6 +3,6 @@ module "ec2-windows" {
   version = "1.0.2"
 
   hostname = "testsrv456"
-  env = "TEST"
-#   is_migrated = false
-}
+  env      = "TEST"
+  #   is_migrated = false
+} 
