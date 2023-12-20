@@ -1,8 +1,8 @@
 resource "aws_kms_key" "key" {
-  description = "KMS key to encrypt and decrypt EC2 instances and EBS volumes"
-  key_usage = "ENCRYPT_DECRYPT"
+  description             = "KMS key to encrypt and decrypt EC2 instances and EBS volumes"
+  key_usage               = "ENCRYPT_DECRYPT"
   deletion_window_in_days = 7
-  tags = merge(local.tags-general, {default-key = true})
+  tags                    = merge(local.tags-general, { default-key = true })
 
   policy = <<POLICY
  {
