@@ -1,0 +1,50 @@
+[0m[33mRunning plan in the remote backend. Output will stream here. Pressing Ctrl-C
+will stop streaming the logs, but will not stop the plan running remotely.[0m
+
+Preparing the remote plan...
+[0m
+[0m[33mTo view this run in a browser, visit:
+https://app.terraform.io/app/compan/compan-workspace/runs/run-zsMWYhmG6sGupiHG[0m
+[0m
+Waiting for the plan to start...
+
+Terraform v1.6.2
+on linux_amd64
+Initializing plugins and modules...
+[33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mValue for undeclared variable[0m
+[33m│[0m [0m
+[33m│[0m [0m[0mThe root module does not declare a variable named "AWS_SECRET_ACCESS_KEY"
+[33m│[0m [0mbut a value was found in file
+[33m│[0m [0m"/home/tfc-agent/.tfc-agent/component/terraform/runs/run-zsMWYhmG6sGupiHG/terraform.tfvars".
+[33m│[0m [0mIf you meant to use this value, add a "variable" block to the
+[33m│[0m [0mconfiguration.
+[33m│[0m [0m
+[33m│[0m [0mTo silence these warnings, use TF_VAR_... environment variables to provide
+[33m│[0m [0mcertain "global" settings to all configurations in your organization. To
+[33m│[0m [0mreduce the verbosity of these warnings, use the -compact-warnings option.
+[33m╵[0m[0m
+[33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mValue for undeclared variable[0m
+[33m│[0m [0m
+[33m│[0m [0m[0mThe root module does not declare a variable named "AWS_ACCESS_KEY_ID" but a
+[33m│[0m [0mvalue was found in file
+[33m│[0m [0m"/home/tfc-agent/.tfc-agent/component/terraform/runs/run-zsMWYhmG6sGupiHG/terraform.tfvars".
+[33m│[0m [0mIf you meant to use this value, add a "variable" block to the
+[33m│[0m [0mconfiguration.
+[33m│[0m [0m
+[33m│[0m [0mTo silence these warnings, use TF_VAR_... environment variables to provide
+[33m│[0m [0mcertain "global" settings to all configurations in your organization. To
+[33m│[0m [0mreduce the verbosity of these warnings, use the -compact-warnings option.
+[33m╵[0m[0m
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mUnsupported attribute[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  on .terraform/modules/ec2-windows/sg.tf line 10, in resource "aws_security_group" "this":
+[31m│[0m [0m  10:     cidr_blocks = [var.vpc_id[4m.cidr_block[0m][0m
+[31m│[0m [0m    [90m├────────────────[0m
+[31m│[0m [0m[0m    [90m│[0m [1mvar.vpc_id[0m is a string
+[31m│[0m [0m[0m
+[31m│[0m [0mCan't access attributes on a primitive-typed value (string).
+[31m╵[0m[0m
+Operation failed: failed running terraform plan (exit 1)
