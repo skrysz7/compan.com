@@ -13,5 +13,5 @@ module "ec2-windows3" {
     aws_kms_key.key
   ]
   kms_key = aws_kms_alias.kms_alias.name
-  #   is_migrated = false
+  #   is_migrated = false 
 } 
