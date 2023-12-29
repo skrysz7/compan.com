@@ -11,13 +11,11 @@ resource "aws_vpc" "vpc-us-east-1" {
 
 
 resource "aws_vpc_endpoint" "ssm" {
-  vpc_id             = aws_vpc.vpc-us-east-1.id
-  service_name       = "com.amazonaws.us-east-1.ssm"
-  vpc_endpoint_type  = "Interface"
-  security_group_ids = [aws_security_group.vpc_endpoint_sg.id]
-  count              = length(var.private_subnet_names) > 0 ? length(var.private_subnet_names) : 0
-  subnet_ids         = [element(aws_subnet.private-us-east-1[*].id, count.index)]
-  # subnet_ids          = [aws_subnet.private-us-east-1[0].id, aws_subnet.private-us-east-1[1].id]
+  vpc_id              = aws_vpc.vpc-us-east-1.id
+  service_name        = "com.amazonaws.us-east-1.ssm"
+  vpc_endpoint_type   = "Interface"
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  subnet_ids          = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
   private_dns_enabled = true
 }
 
@@ -26,7 +24,6 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   service_name        = "com.amazonaws.us-east-1.ssmmessages"
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
-  count               = length(var.private_subnet_names) > 0 ? length(var.private_subnet_names) : 0
-  subnet_ids          = [element(aws_subnet.private-us-east-1[*].id, count.index)]
+  subnet_ids          = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
   private_dns_enabled = true
 }

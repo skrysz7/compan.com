@@ -40,3 +40,9 @@ variable "availability_zone" {
 variable "istest" {
   default = false
 }
+
+variable "extra_sgs" {
+  description = "It's possible to pass extra Security Groups that needs to be attached to EC2 instance."
+  default     = []
+  type        = list(string)
+}
