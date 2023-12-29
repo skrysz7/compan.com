@@ -1,3 +1,13 @@
+resource "aws_security_group" "vpc_endpoint_sg" {
+  name = "vpc_endpoint_sg"
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.vpc-us-east-1.cidr_block]
+  }
+}
+
 # variable "sg_ports" {
 #   type        = list(number)
 #   description = "list of ingress ports"
