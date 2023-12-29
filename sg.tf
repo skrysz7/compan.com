@@ -1,5 +1,7 @@
 resource "aws_security_group" "vpc_endpoint_sg" {
-  name = "vpc_endpoint_sg"
+  name        = "vpc_endpoint_sg"
+  vpc_id      = aws_vpc.vpc-us-east-1.id
+  description = "SG for SSM vpc endpoint"
   ingress {
     from_port   = 443
     to_port     = 443
