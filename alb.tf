@@ -3,7 +3,7 @@ resource "aws_lb" "test" {
   internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.vpc_endpoint_sg.id]
-  subnets            = [aws_subnet.private-us-east-1]
+  subnets            = [aws_subnet.private-us-east-1[*]]
 
   enable_deletion_protection = false
 
