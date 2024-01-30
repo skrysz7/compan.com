@@ -23,21 +23,21 @@ resource "aws_s3_bucket_policy" "allow_access_from_nlb" {
   policy = data.aws_iam_policy_document.allow_access_from_nlb.json
 }
 
-resource "aws_s3_object" "prefix" {
-  bucket = aws_s3_bucket.nlb_access_logs.id
-  key    = "prefix"
-#   source = "path/to/file"
-}
+# resource "aws_s3_object" "prefix" {
+#   bucket = aws_s3_bucket.nlb_access_logs.id
+#   key    = "prefix/"
+# #   source = "path/to/file"
+# }
 
-resource "aws_s3_object" "AWSLogs" {
-  bucket = aws_s3_bucket.nlb_access_logs.id
-  key    = "prefix/AWSLogs"
-#   source = "path/to/file"
-}
+# resource "aws_s3_object" "AWSLogs" {
+#   bucket = aws_s3_bucket.nlb_access_logs.id
+#   key    = "prefix/AWSLogs/"
+# #   source = "path/to/file"
+# }
 
-resource "aws_s3_object" "342023131128" {
+resource "aws_s3_object" "access_logs_folder" {
   bucket = aws_s3_bucket.nlb_access_logs.id
-  key    = "prefix/AWSLogs/342023131128"
+  key    = "prefix/AWSLogs/342023131128/"
 #   source = "path/to/file"
 }
 
