@@ -7,11 +7,11 @@ resource "aws_lb" "test" {
 
   enable_deletion_protection = false
 
-  access_logs {
-    bucket  = aws_s3_bucket.nlb_access_logs.id
-    prefix  = "ext"
-    enabled = true
-  }
+#   access_logs {
+#     bucket  = aws_s3_bucket.nlb_access_logs.id
+#     prefix  = "ext"
+#     enabled = true
+#   }
 }
 
 resource "aws_s3_bucket" "nlb_access_logs" {
