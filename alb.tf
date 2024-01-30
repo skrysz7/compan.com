@@ -37,7 +37,7 @@ resource "aws_s3_bucket_policy" "allow_access_from_nlb" {
 
 resource "aws_s3_object" "access_logs_folder" {
   bucket = aws_s3_bucket.nlb_access_logs.id
-  key    = "prefix/AWSLogs/342023131128/"
+  key    = "AWSLogs/342023131128/"
 #   source = "path/to/file"
 }
 
@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "allow_access_from_nlb" {
     ]
 
     resources = [
-      "arn:aws:s3:::xms-sspr-prod-ext-nlb-access-logs/prefix/AWSLogs/342023131128/*"
+      "arn:aws:s3:::xms-sspr-prod-ext-nlb-access-logs/AWSLogs/342023131128/*"
     ]
   }
 }
