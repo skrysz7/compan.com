@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "allow_access_from_nlb" {
     ]
 
     resources = [
-      "arn:aws:s3:::xms-sspr-prod-ext-nlb-access-logs/prefix/AWSLogs/186235423003/*"
+      "arn:aws:s3:::xms-sspr-prod-ext-nlb-access-logs/prefix/AWSLogs/342023131128/*"
     ]
   }
 }
