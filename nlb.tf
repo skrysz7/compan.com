@@ -62,7 +62,7 @@ data "aws_network_interface" "lb" {
   }
   filter {
     name   = "subnet-id"
-    values = [[element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]]
+    values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
     # values = ["subnet-0e0b88f9d0e85c39e"]
   }
 }
