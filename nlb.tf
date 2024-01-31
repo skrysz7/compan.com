@@ -37,41 +37,73 @@ module "https_iam_prod_ext_nlb" {
   enable_cross_zone_load_balancing = false
   internal                         = true
   subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+# subnet mapping wants to recreate ALB
 #   subnet_mapping = [{
 #     subnet_id            = aws_subnet.private-us-east-1[0].id
-#     private_ipv4_address = "10.0.3.165"
+#     private_ipv4_address = "10.0.3.226"
 #     },
 #     {
 #     subnet_id            = aws_subnet.private-us-east-1[1].id
-#     private_ipv4_address = "10.0.4.63"
+#     private_ipv4_address = "10.0.4.181"
 #     }
 #   ]
 }
 output "module" {
     value = module.https_iam_prod_ext_nlb
 }
-# output "lb_arn_suffix" {
-#     value = module.https_iam_prod_ext_nlb.lb_arn_suffix
-# }
+output "lb_arn_suffix" {
+    value = module.https_iam_prod_ext_nlb.lb_arn_suffix
+}
 
-# data "aws_network_interface" "lb" {
-# #   count = length(var.private_subnet_names)
-#   for_each = aws_subnet.private-us-east-1[*]
+data "aws_network_interface" "eni_1a" {
+  filter {
+    name   = "description"
+    values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
+  }
+  filter {
+    name   = "subnet-id"
+    #values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+    values = ["subnet-0e0b88f9d0e85c39e"]
+  }
+}
 
-#   filter {
-#     name   = "description"
-#     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
-#   }
-#   filter {
-#     name   = "subnet-id"
-#     values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
-#     # values = ["subnet-0e0b88f9d0e85c39e"]
-#   }
-# }
-# output "ip" {
-#   value = data.aws_network_interface.lb.private_ip
-# }
+data "aws_network_interface" "eni_1b" {
+  filter {
+    name   = "description"
+    values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
+  }
+  filter {
+    name   = "subnet-id"
+    #values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+    values = ["subnet-08d2a03679d13feaf"]
+  }
+}
+output "eni_id_1a" {
+  value = data.aws_network_interface.eni_1a.id
+}
 
+output "eni_id_1b" {
+  value = data.aws_network_interface.eni_1b.id
+}
+
+resource "aws_flow_log" "nlb_flow_logs_1a" {
+  log_destination      = aws_s3_bucket.nlb_access_logs.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  eni_id               = data.aws_network_interface.eni_1a.id
+}
+
+resource "aws_flow_log" "nlb_flow_logs_1b" {
+  log_destination      = aws_s3_bucket.nlb_access_logs.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  eni_id               = data.aws_network_interface.eni_1b.id
+}
+
+resource "aws_s3_bucket" "nlb_access_logs" {
+  bucket = "nlb-fl-test"
+  tags = local.tags-general
+}
 # module "https_iam_prod_ext_nlb" {
 #   source = "path/to/terraform-aws-alb"
 #   # ... other module configurations ...
