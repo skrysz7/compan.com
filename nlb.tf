@@ -68,8 +68,26 @@ data "aws_network_interface" "eni_1a" {
     values = ["subnet-0e0b88f9d0e85c39e"]
   }
 }
-output "eni_id" {
-  value = data.aws_network_interface.eni_1a
+
+data "aws_network_interface" "eni_1b" {
+#   count = length(var.private_subnet_names)
+#   for_each = local.private_subnets
+  filter {
+    name   = "description"
+    values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
+  }
+  filter {
+    name   = "subnet-id"
+    #values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+    values = ["subnet-08d2a03679d13feaf"]
+  }
+}
+output "eni_id_1a" {
+  value = data.aws_network_interface.eni_1a.id
+}
+
+output "eni_id_1b" {
+  value = data.aws_network_interface.eni_1b.id
 }
 
 # module "https_iam_prod_ext_nlb" {
