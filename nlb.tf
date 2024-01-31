@@ -38,14 +38,14 @@ module "https_iam_prod_ext_nlb" {
   internal                         = true
   subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
 }
-# output "id" {
-#   description = "The ID and ARN of the load balancer we created"
-#   value       = module.https_iam_prod_ext_nlb.id
-# }
-
-output "module" {
-    value = module.https_iam_prod_ext_nlb
+output "id" {
+  description = "The ID and ARN of the load balancer we created"
+  value       = module.https_iam_prod_ext_nlb.lb_id
 }
+
+# output "module" {
+#     value = module.https_iam_prod_ext_nlb
+# }
 # data "aws_lb" "sspr_nlb" {
 #   arn = module.https_iam_prod_ext_nlb.load_balancer_arn
 # }
