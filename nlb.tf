@@ -53,17 +53,18 @@ output "lb_arn_suffix" {
 }
 
 data "aws_network_interface" "lb" {
-  for_each = aws_subnet.private-us-east-1[*]
+  count = length(aws_subnet.private-us-east-1)
+#   for_each = aws_subnet.private-us-east-1[*]
 
   filter {
     name   = "description"
     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
   }
+  filter {
+    name   = "subnet-id"
+    values = [aws_subnet.private-us-east-1[count.index]]
+  }
 
-#   filter {
-#     name   = "subnet-id"
-#     values = [each.value]
-#   }
 }
 
 # module "https_iam_prod_ext_nlb" {
