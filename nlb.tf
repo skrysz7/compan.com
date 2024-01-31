@@ -51,9 +51,9 @@ module "https_iam_prod_ext_nlb" {
 output "module" {
     value = module.https_iam_prod_ext_nlb
 }
-# output "lb_arn_suffix" {
-#     value = module.https_iam_prod_ext_nlb.lb_arn_suffix
-# }
+output "lb_arn_suffix" {
+    value = module.https_iam_prod_ext_nlb.lb_arn_suffix
+}
 
 data "aws_network_interface" "eni_1a" {
   filter {
