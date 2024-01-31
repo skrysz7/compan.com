@@ -36,16 +36,17 @@ module "https_iam_prod_ext_nlb" {
   vpc_id      = aws_vpc.vpc-us-east-1.id
   enable_cross_zone_load_balancing = false
   internal                         = true
-#   subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
-  subnet_mapping = [{
-    subnet_id            = aws_subnet.private-us-east-1[0].id
-    private_ipv4_address = "10.0.3.226"
-    },
-    {
-    subnet_id            = aws_subnet.private-us-east-1[1].id
-    private_ipv4_address = "10.0.4.181"
-    }
-  ]
+  subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+# subnet mapping wants to recreate ALB
+#   subnet_mapping = [{
+#     subnet_id            = aws_subnet.private-us-east-1[0].id
+#     private_ipv4_address = "10.0.3.226"
+#     },
+#     {
+#     subnet_id            = aws_subnet.private-us-east-1[1].id
+#     private_ipv4_address = "10.0.4.181"
+#     }
+#   ]
 }
 output "module" {
     value = module.https_iam_prod_ext_nlb
@@ -54,20 +55,20 @@ output "module" {
 #     value = module.https_iam_prod_ext_nlb.lb_arn_suffix
 # }
 
-# data "aws_network_interface" "lb" {
-# #   count = length(var.private_subnet_names)
-#   for_each = aws_subnet.private-us-east-1[*]
+data "aws_network_interface" "lb" {
+#   count = length(var.private_subnet_names)
+  for_each = aws_subnet.private-us-east-1[*]
 
-#   filter {
-#     name   = "description"
-#     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
-#   }
-#   filter {
-#     name   = "subnet-id"
-#     values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
-#     # values = ["subnet-0e0b88f9d0e85c39e"]
-#   }
-# }
+  filter {
+    name   = "description"
+    values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
+  }
+  filter {
+    name   = "subnet-id"
+    #values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+    values = ["subnet-0e0b88f9d0e85c39e","subnet-08d2a03679d13feaf"]
+  }
+}
 # output "ip" {
 #   value = data.aws_network_interface.lb.private_ip
 # }
