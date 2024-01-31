@@ -37,18 +37,14 @@ module "https_iam_prod_ext_nlb" {
   enable_cross_zone_load_balancing = false
   internal                         = true
   subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
-  # access_logs = {
-  #   bucket  = aws_s3_bucket.nlb_access_logs.id
-  #   # prefix  = "test-lb"
-  #   enabled = true
-  # }
-
-  #  TCP_UDP, UDP, TCP
-  
 }
-output "id" {
-  description = "The ID and ARN of the load balancer we created"
-  value       = module.https_iam_prod_ext_nlb.id
+# output "id" {
+#   description = "The ID and ARN of the load balancer we created"
+#   value       = module.https_iam_prod_ext_nlb.id
+# }
+
+output "module" {
+    value = module.https_iam_prod_ext_nlb
 }
 # data "aws_lb" "sspr_nlb" {
 #   arn = module.https_iam_prod_ext_nlb.load_balancer_arn
