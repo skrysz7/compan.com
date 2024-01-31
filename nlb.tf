@@ -57,7 +57,7 @@ output "module" {
 
 data "aws_network_interface" "lb" {
 #   count = length(var.private_subnet_names)
-  for_each = aws_subnet.private-us-east-1
+  for_each = local.private_subnets
 
   filter {
     name   = "description"
