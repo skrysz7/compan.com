@@ -56,10 +56,10 @@ data "aws_network_interface" "lb" {
 #   count = length(var.private_subnet_names)
 #   for_each = aws_subnet.private-us-east-1[*]
 
-#   filter {
-#     name   = "description"
-#     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
-#   }
+  filter {
+    name   = "description"
+    values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
+  }
   filter {
     name   = "subnet-id"
     # values = [var.private_subnet_names[count.index]]
