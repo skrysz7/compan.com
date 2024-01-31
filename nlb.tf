@@ -57,7 +57,7 @@ data "aws_network_interface" "lb" {
 
   filter {
     name   = "description"
-    values = ["ELB ${https_iam_prod_ext_nlb.lb_arn_suffix}"]
+    values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
   }
 
 #   filter {
