@@ -46,9 +46,14 @@ module "https_iam_prod_ext_nlb" {
   #  TCP_UDP, UDP, TCP
   
 }
+# output "arn" {
+#   description = "The ID and ARN of the load balancer we created"
+#   value       = try(aws_lb.https_iam_prod_ext_nlb[0].arn, null)
+# }
+
 output "arn" {
   description = "The ID and ARN of the load balancer we created"
-  value       = try(aws_lb.https_iam_prod_ext_nlb[0].arn, null)
+  value       = try(aws_lb.https_iam_prod_ext_nlb.arn, null)
 }
 # data "aws_lb" "sspr_nlb" {
 #   arn = module.https_iam_prod_ext_nlb.load_balancer_arn
