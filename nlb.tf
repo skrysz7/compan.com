@@ -53,7 +53,7 @@ output "lb_arn_suffix" {
 }
 
 data "aws_network_interface" "lb" {
-  count = length(var.private_subnet_names)
+#   count = length(var.private_subnet_names)
 #   for_each = aws_subnet.private-us-east-1[*]
 
 #   filter {
@@ -62,7 +62,8 @@ data "aws_network_interface" "lb" {
 #   }
   filter {
     name   = "subnet-id"
-    values = [var.private_subnet_names[count.index]]
+    # values = [var.private_subnet_names[count.index]]
+    values = ["subnet-0e0b88f9d0e85c39e"]
   }
 
 }
