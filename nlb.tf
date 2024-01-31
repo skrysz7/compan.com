@@ -37,15 +37,56 @@ module "https_iam_prod_ext_nlb" {
   enable_cross_zone_load_balancing = false
   internal                         = true
   subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
-  # access_logs = {
-  #   bucket  = aws_s3_bucket.nlb_access_logs.id
-  #   # prefix  = "test-lb"
-  #   enabled = true
-  # }
-
-  #  TCP_UDP, UDP, TCP
-  
+  subnet_mapping = [{
+    subnet_id            = aws_subnet.private-us-east-1[0].id
+    private_ipv4_address = "10.0.3.165"
+    },
+    {
+    subnet_id            = aws_subnet.private-us-east-1[1].id
+    private_ipv4_address = "10.0.4.63"
+    }
+  ]
 }
+output "module" {
+    value = module.https_iam_prod_ext_nlb
+}
+# output "lb_arn_suffix" {
+#     value = module.https_iam_prod_ext_nlb.lb_arn_suffix
+# }
+
+# data "aws_network_interface" "lb" {
+# #   count = length(var.private_subnet_names)
+#   for_each = aws_subnet.private-us-east-1[*]
+
+#   filter {
+#     name   = "description"
+#     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
+#   }
+#   filter {
+#     name   = "subnet-id"
+#     values = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
+#     # values = ["subnet-0e0b88f9d0e85c39e"]
+#   }
+# }
+# output "ip" {
+#   value = data.aws_network_interface.lb.private_ip
+# }
+
+# module "https_iam_prod_ext_nlb" {
+#   source = "path/to/terraform-aws-alb"
+#   # ... other module configurations ...
+# }
+# data "aws_route53_record" "nlb" {
+#   name = module.https_iam_prod_ext_nlb.dns_name
+# }
+# output "nlb_ip" {
+#   value = data.aws_route53_record.nlb.records[0]
+# }
+# output "id" {
+#   description = "The ID and ARN of the load balancer we created"
+#   value       = module.https_iam_prod_ext_nlb.lb_id
+# }
+
 
 # data "aws_lb" "sspr_nlb" {
 #   arn = module.https_iam_prod_ext_nlb.load_balancer_arn
