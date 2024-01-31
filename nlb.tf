@@ -37,7 +37,7 @@ module "https_iam_prod_ext_nlb" {
   enable_cross_zone_load_balancing = false
   internal                         = true
   subnets            = [element(aws_subnet.private-us-east-1[*].id, 0), element(aws_subnet.private-us-east-1[*].id, 1)]
-#   Subnet_mapping = [{
+#   subnet_mapping = [{
 #     subnet_id            = local.subnet1a[0]
 #     private_ipv4_address = "10.140.22.140"
 #     },
@@ -48,16 +48,34 @@ module "https_iam_prod_ext_nlb" {
 #   ]
 }
 
+output "lb_arn_suffix" {
+    value = module.https_iam_prod_ext_nlb.lb_arn_suffix
+}
+
+data "aws_network_interface" "lb" {
+#   for_each = aws_subnet.private-us-east-1[*]
+
+  filter {
+    name   = "description"
+    values = ["ELB ${https_iam_prod_ext_nlb.lb_arn_suffix}"]
+  }
+
+#   filter {
+#     name   = "subnet-id"
+#     values = [each.value]
+#   }
+}
+
 # module "https_iam_prod_ext_nlb" {
 #   source = "path/to/terraform-aws-alb"
 #   # ... other module configurations ...
 # }
-data "aws_route53_record" "nlb" {
-  name = module.https_iam_prod_ext_nlb.dns_name
-}
-output "nlb_ip" {
-  value = data.aws_route53_record.nlb.records[0]
-}
+# data "aws_route53_record" "nlb" {
+#   name = module.https_iam_prod_ext_nlb.dns_name
+# }
+# output "nlb_ip" {
+#   value = data.aws_route53_record.nlb.records[0]
+# }
 # output "id" {
 #   description = "The ID and ARN of the load balancer we created"
 #   value       = module.https_iam_prod_ext_nlb.lb_id
