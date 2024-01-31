@@ -53,7 +53,7 @@ output "lb_arn_suffix" {
 }
 
 data "aws_network_interface" "lb" {
-#   for_each = aws_subnet.private-us-east-1[*]
+  for_each = aws_subnet.private-us-east-1[*]
 
   filter {
     name   = "description"
