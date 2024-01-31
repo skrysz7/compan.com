@@ -67,7 +67,7 @@ data "aws_network_interface" "lb" {
   }
 }
 output "ip" {
-  value = data.aws_network_interface.lb
+  value = data.aws_network_interface.lb.private_ip
 }
 
 # module "https_iam_prod_ext_nlb" {
