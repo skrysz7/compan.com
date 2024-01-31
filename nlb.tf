@@ -56,8 +56,6 @@ output "module" {
 # }
 
 data "aws_network_interface" "eni_1a" {
-#   count = length(var.private_subnet_names)
-#   for_each = local.private_subnets
   filter {
     name   = "description"
     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
@@ -70,8 +68,6 @@ data "aws_network_interface" "eni_1a" {
 }
 
 data "aws_network_interface" "eni_1b" {
-#   count = length(var.private_subnet_names)
-#   for_each = local.private_subnets
   filter {
     name   = "description"
     values = ["ELB ${module.https_iam_prod_ext_nlb.lb_arn_suffix}"]
@@ -90,6 +86,24 @@ output "eni_id_1b" {
   value = data.aws_network_interface.eni_1b.id
 }
 
+resource "aws_flow_log" "nlb_flow_logs_1a" {
+  log_destination      = aws_s3_bucket.nlb_access_logs.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  eni_id               = data.aws_network_interface.eni_1a.id
+}
+
+resource "aws_flow_log" "nlb_flow_logs_1b" {
+  log_destination      = aws_s3_bucket.nlb_access_logs.arn
+  log_destination_type = "s3"
+  traffic_type         = "ALL"
+  eni_id               = data.aws_network_interface.eni_1b.id
+}
+
+resource "aws_s3_bucket" "nlb_access_logs" {
+  bucket = "nlb-fl-test"
+  tags = local.tags-general
+}
 # module "https_iam_prod_ext_nlb" {
 #   source = "path/to/terraform-aws-alb"
 #   # ... other module configurations ...
