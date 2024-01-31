@@ -65,7 +65,9 @@ data "aws_network_interface" "lb" {
     # values = [var.private_subnet_names[count.index]]
     values = ["subnet-0e0b88f9d0e85c39e"]
   }
-
+}
+output "ip" {
+  value = data.aws_network_interface.lb
 }
 
 # module "https_iam_prod_ext_nlb" {
