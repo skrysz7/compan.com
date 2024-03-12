@@ -42,6 +42,16 @@ variable "private_subnet_names" {
   default = ["private-subnet-east-1a", "private-subnet-east-1b"]
 }
 
+variable "private_subnet1_id" {
+  description = "ID of subnet1"
+  default = "private-subnet-east-1a"
+}
+
+variable "private_subnet2_id" {
+  description = "ID of subnet2"
+  default = "private-subnet-east-1b"
+}
+
 variable "availability_zone" {
   type    = list(any)
   default = ["us-east-1a", "us-east-1b"]

@@ -19,9 +19,9 @@ resource "aws_ecs_service" "currency" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = [var.public_subnet1_id]
+    subnets = [var.private_subnet1_id]
     security_groups = ["sg-01d1755e60e9fd5ad"]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   service_connect_configuration {
