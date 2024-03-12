@@ -17,7 +17,6 @@ resource "aws_ecs_service" "adservice" {
   cluster         = aws_ecs_cluster.boutique.id
   task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/adservice:2"
   desired_count   = 1
-  iam_role        = aws_iam_role.admin.arn
   launch_type     = "FARGATE"
 
   service_connect_configuration {
