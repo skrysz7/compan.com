@@ -29,12 +29,12 @@ variable "public_subnet_names" {
 
 variable "public_subnet1_id" {
   description = "ID of subnet1"
-  default = aws_subnet.public-us-east-1[0].id
+  default = element(aws_subnet.public-us-east-1[*].id, 0)
 }
 
 variable "public_subnet2_id" {
   description = "ID of subnet2"
-  default = aws_subnet.public-us-east-1[1].id
+  default = element(aws_subnet.public-us-east-1[*].id, 1)
 }
 
 variable "private_subnet_names" {
