@@ -19,6 +19,12 @@ resource "aws_ecs_service" "adservice" {
   desired_count   = 1
   launch_type     = "FARGATE"
 
+  network_configuration {
+    subnets = [element(aws_subnet.public-us-east-1[*].id, 0)]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = true
+  }
+
   service_connect_configuration {
     enabled = true
     namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
