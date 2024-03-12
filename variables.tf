@@ -27,6 +27,14 @@ variable "public_subnet_names" {
   default = ["public-subnet-east-1a", "public-subnet-east-1b"]
 }
 
+variable "public_subnet1_id" {
+  description = "ID of subnet1"
+}
+
+variable "public_subnet2_id" {
+  description = "ID of subnet2"
+}
+
 variable "private_subnet_names" {
   type    = list(any)
   default = ["private-subnet-east-1a", "private-subnet-east-1b"]
