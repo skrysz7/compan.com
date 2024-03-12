@@ -45,7 +45,7 @@ resource "aws_ecs_service" "emailservice" {
   task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/emailservice:2"
   desired_count   = 1
   launch_type     = "FARGATE"
-
+ 
   network_configuration {
     subnets = [var.private_subnet1_id]
     security_groups = ["sg-01d1755e60e9fd5ad"]
