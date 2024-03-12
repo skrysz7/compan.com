@@ -151,11 +151,146 @@ resource "aws_ecs_service" "cartservice" {
   depends_on      = []
 }
 
+################
+resource "aws_ecs_service" "adservice" {
+  name            = "adservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/adservice:2"
+  desired_count   = 1
+  launch_type     = "FARGATE"
 
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
 
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "adservice"
+        port = "9555"
+      }
+      discovery_name = "adservice"
+      port_name = "adservice"
+    }
+}
+  depends_on      = []
+}
 
+resource "aws_ecs_service" "checkoutservice" {
+  name            = "checkoutservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/checkoutservice:2"
+  desired_count   = 1
+  launch_type     = "FARGATE"
 
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
 
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "checkoutservice"
+        port = "5050"
+      }
+      discovery_name = "checkoutservice"
+      port_name = "checkoutservice"
+    }
+}
+  depends_on      = []
+}
+
+resource "aws_ecs_service" "recommendationservice" {
+  name            = "recommendationservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/recommendationservice:1"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "recommendationservice"
+        port = "8080"
+      }
+      discovery_name = "recommendationservice"
+      port_name = "recommendationservice"
+    }
+}
+  depends_on      = []
+}
+
+resource "aws_ecs_service" "shippingservice" {
+  name            = "shippingservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/shippingservice:1"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "shippingservice"
+        port = "50051"
+      }
+      discovery_name = "shippingservice"
+      port_name = "shippingservice"
+    }
+}
+  depends_on      = []
+}
+
+resource "aws_ecs_service" "frontend" {
+  name            = "frontend"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/frontend:2"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.public_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = true
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "frontend"
+        port = "8080"
+      }
+      discovery_name = "frontend"
+      port_name = "frontend"
+    }
+}
+  depends_on      = []
+}
 # resource "aws_ecs_service" "adservice" {
 #   name            = "adservice"
 #   cluster         = aws_ecs_cluster.boutique.id
