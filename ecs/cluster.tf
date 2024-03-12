@@ -1,9 +1,18 @@
+resource "aws_service_discovery_http_namespace" "boutique_namespace" {
+  name        = "boutique"
+  description = "boutique"
+}
+
 resource "aws_ecs_cluster" "boutique" {
   name = "boutique"
 
   setting {
     name  = "containerInsights"
     value = "enabled"
+  }
+
+  service_connect_defaults {
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
   }
 
   configuration {
