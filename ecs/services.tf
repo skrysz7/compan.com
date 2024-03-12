@@ -36,14 +36,34 @@ resource "aws_ecs_service" "currency" {
       port_name = "currencyservice"
     }
 }
-  # alarms {
-  #   enable   = true
-  #   rollback = true
-  #   alarm_names = [
-  #     aws_cloudwatch_metric_alarm.example.alarm_name
-  #   ]
-  # }
+  depends_on      = []
+}
 
+resource "aws_ecs_service" "shippingservice" {
+  name            = "shippingservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/shippingservice:1"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "shippingservice"
+        port = "50051"
+      }
+      discovery_name = "shippingservice"
+      port_name = "shippingservice"
+    }
+}
   depends_on      = []
 }
 
