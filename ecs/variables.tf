@@ -5,10 +5,10 @@ variable "service_connect_namespace" {
 
 variable "public_subnet1_id" {
   description = "ID of subnet1"
-  default = element(aws_subnet.public-us-east-1[*].id, 0)
+  default = "public-subnet-east-1a"
 }
 
 variable "public_subnet2_id" {
   description = "ID of subnet2"
-  default = element(aws_subnet.public-us-east-1[*].id, 1)
+  default = "public-subnet-east-1b"
 }
