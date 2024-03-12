@@ -20,7 +20,7 @@ resource "aws_ecs_service" "adservice" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = [element(aws_subnet.public-us-east-1[*].id, 0)]
+    subnets = [locals.public_subnet1a]
     security_groups = ["sg-01d1755e60e9fd5ad"]
     assign_public_ip = true
   }
