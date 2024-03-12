@@ -32,18 +32,18 @@ resource "aws_route_table" "private_route_table" {
   })
 }
 
-resource "aws_route" "private_route" {
-  route_table_id         = aws_route_table.private_route_table.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.natgw.id
-}
+# resource "aws_route" "private_route" {
+#   route_table_id         = aws_route_table.private_route_table.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.natgw.id
+# }
 
-resource "aws_route_table_association" "private-1a" {
-  subnet_id      = local.private_subnets.private_subnet1a.id
-  route_table_id = aws_route_table.private_route_table.id
-}
+# resource "aws_route_table_association" "private-1a" {
+#   subnet_id      = local.private_subnets.private_subnet1a.id
+#   route_table_id = aws_route_table.private_route_table.id
+# }
 
-resource "aws_route_table_association" "private-1b" {
-  subnet_id      = local.private_subnets.private_subnet1b.id
-  route_table_id = aws_route_table.private_route_table.id
-}
+# resource "aws_route_table_association" "private-1b" {
+#   subnet_id      = local.private_subnets.private_subnet1b.id
+#   route_table_id = aws_route_table.private_route_table.id
+# }
