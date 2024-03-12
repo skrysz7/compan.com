@@ -39,10 +39,10 @@ resource "aws_ecs_service" "currency" {
   depends_on      = []
 }
 
-resource "aws_ecs_service" "shippingservice" {
-  name            = "shippingservice"
+resource "aws_ecs_service" "emailservice" {
+  name            = "emailservice"
   cluster         = aws_ecs_cluster.boutique.id
-  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/shippingservice:1"
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/emailservice:2"
   desired_count   = 1
   launch_type     = "FARGATE"
 
@@ -57,15 +57,100 @@ resource "aws_ecs_service" "shippingservice" {
     namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
     service {
       client_alias {
-        dns_name = "shippingservice"
-        port = "50051"
+        dns_name = "emailservice"
+        port = "8080"
       }
-      discovery_name = "shippingservice"
-      port_name = "shippingservice"
+      discovery_name = "emailservice"
+      port_name = "emailservice"
     }
 }
   depends_on      = []
 }
+
+resource "aws_ecs_service" "paymentservice" {
+  name            = "paymentservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/paymentservice:1"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "paymentservice"
+        port = "50051"
+      }
+      discovery_name = "paymentservice"
+      port_name = "paymentservice"
+    }
+}
+  depends_on      = []
+}
+
+resource "aws_ecs_service" "productcatalogservice" {
+  name            = "productcatalogservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/productcatalogservice:3"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "productcatalogservice"
+        port = "3550"
+      }
+      discovery_name = "productcatalogservice"
+      port_name = "productcatalogservice"
+    }
+}
+  depends_on      = []
+}
+
+resource "aws_ecs_service" "cartservice" {
+  name            = "cartservice"
+  cluster         = aws_ecs_cluster.boutique.id
+  task_definition = "arn:aws:ecs:us-east-1:342023131128:task-definition/cartservice:2"
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets = [var.private_subnet1_id]
+    security_groups = ["sg-01d1755e60e9fd5ad"]
+    assign_public_ip = false
+  }
+
+  service_connect_configuration {
+    enabled = true
+    namespace = aws_service_discovery_http_namespace.boutique_namespace.arn
+    service {
+      client_alias {
+        dns_name = "cartservice"
+        port = "50051"
+      }
+      discovery_name = "cartservice"
+      port_name = "cartservice"
+    }
+}
+  depends_on      = []
+}
+
 
 
 
