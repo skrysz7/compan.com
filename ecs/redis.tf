@@ -12,8 +12,9 @@ resource "aws_elasticache_replication_group" "this" {
   parameter_group_name        = "default.redis3.2"
   port                        = 6379
   apply_immediately           = true
-  engine                      = "redis"
-  #engine_version              = "7.0.7"
+  engine         = "redis"
+  engine_version = "5.0.6"
+  node_type      = "cache.t3.micro"
   security_group_ids          = [aws_security_group.redis.id]
   snapshot_retention_limit    = "0"
   subnet_group_name           = aws_elasticache_subnet_group.this.name
