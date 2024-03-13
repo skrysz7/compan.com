@@ -22,7 +22,7 @@ resource "aws_elasticache_replication_group" "this" {
 
 resource "aws_security_group" "redis" {
   description = "sg for redis"
-  name        = redis_sg
+  name        = "redis_sg"
   vpc_id      = var.vpc_id
 
   lifecycle {
