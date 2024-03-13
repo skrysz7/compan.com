@@ -22,3 +22,7 @@ variable "private_subnet2_id" {
   description = "ID of subnet2"
   default = "private-subnet-east-1b"
 }
+
+variable "vpc_id" {
+  default = "aws_vpc.vpc-us-east-1.id"
+}
