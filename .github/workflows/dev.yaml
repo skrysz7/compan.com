@@ -1,1 +1,17 @@
+name: Trigger Second Workflow
 
+on:
+  push:
+    branches:
+      - pre-release  # Trigger this workflow when something is pushed to pre-release
+
+jobs:
+  trigger_second_workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Trigger repository dispatch
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        event-type: trigger-second-workflow
