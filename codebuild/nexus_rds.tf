@@ -18,7 +18,7 @@ module "nexus_rds" {
   major_engine_version = var.nexus_rds_major_engine_version
   instance_class       = var.nexus_rds_instance_class
 
-  kms_key_id                      = var.kms_key_id.arn
+  kms_key_id                      = var.kms_key_id
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   create_cloudwatch_log_group     = true
 

@@ -134,5 +134,5 @@ variable "vpc_id" {
 }
 
 variable "kms_key_id" {
-  default = "04d25345-a458-40f3-88f2-616e1ff45040"
+  type = string
 }

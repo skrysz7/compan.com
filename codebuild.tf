@@ -5,5 +5,5 @@ module "codebuild" {
     nexus_rds_identifier = "xms-nexus-intg"
     create_migration_instance = false
     create_intg_migration_instance = true
-    
+    kms_key_id = aws_kms_key.key.arn
 }
