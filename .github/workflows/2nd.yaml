@@ -1,0 +1,44 @@
+name: Create and Merge PR
+
+on:
+  repository_dispatch:
+    types: [trigger-second-workflow]
+
+jobs:
+  create_and_merge_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Create Pull Request
+      id: create_pr
+      uses: peter-evans/create-pull-request@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'Automated changes'
+        branch: pre-release
+        base: main
+        title: 'Automated Pull Request from pre-release to main'
+        body: 'This pull request is created automatically from pre-release to main.'
+
+    - name: Merge Pull Request
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prs = await github.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            head: 'pre-release',
+          });
+          if (prs.data.length > 0) {
+            const prNumber = prs.data[0].number;
+            await github.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+          }
