@@ -10,11 +10,11 @@ jobs:
   create-pr:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      # - uses: actions/checkout@v3
 
       - uses: peter-evans/create-pull-request@v6  # Assuming Node.js 20 compatible
         with:
-            token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+            # token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
             commit-message: 'Automated changes from pre-release'
             branch: pre-release
             base: main
