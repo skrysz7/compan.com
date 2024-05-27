@@ -1,11 +1,11 @@
-name: Workflow_02
+name: Create PR from pre-release to main
 
 on:
-    workflow_dispatch: {}  # Empty object for manual triggering
-    workflow_run:
-        workflows: ["First Workflow"]
-        types:
-          - completed
+  workflow_run:
+    workflows: ["First Workflow"]
+    types:
+      - completed
+
 jobs:
   create_pr:
     runs-on: ubuntu-latest
@@ -28,13 +28,19 @@ jobs:
             echo "Changes detected"
           fi
 
+      - name: Create a new branch for PR
+        run: |
+          NEW_BRANCH="pr-from-pre-release-$(date +%s)"
+          git checkout -b $NEW_BRANCH
+          git push origin $NEW_BRANCH
+
       - name: Create Pull Request
         id: create_pr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           commit-message: 'Automated changes from pre-release'
-          branch: pre-release
+          branch: ${{ github.ref_name }}-pr-branch  # Use the new branch name
           base: main
           title: 'Automated Pull Request from pre-release to main'
           body: 'This pull request is created automatically from pre-release to main.'
