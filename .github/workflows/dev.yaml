@@ -1,4 +1,4 @@
-name: Trigger Second Workflow
+name: First Workflow
 
 on:
   push:
@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Trigger repository dispatch
-      uses: peter-evans/repository-dispatch@v3
-      with:
-        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        event-type: trigger-second-workflow
+      - run: echo "First Workflow running!!!"
+      - name: Checkout
+        uses: actions/checkout@v2
