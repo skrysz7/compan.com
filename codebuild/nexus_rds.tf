@@ -4,8 +4,8 @@ module "nexus_rds" {
 
   identifier = "nexus-intg"
 
-  create_db_option_group    = true
-  create_db_parameter_group = true
+  create_db_option_group    = false
+  create_db_parameter_group = false
 
   create_db_subnet_group = false
   subnet_ids             = ["subnet-0a1e9f602c5b302ad"]
