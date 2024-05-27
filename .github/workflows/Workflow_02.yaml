@@ -17,6 +17,12 @@ jobs:
         with:
           ref: pre-release
 
+      - name: Set up Git configuration
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}.git
+
       - name: Fetch main branch
         run: git fetch origin main
 
@@ -41,7 +47,7 @@ jobs:
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           commit-message: 'Automated changes from pre-release'
-          branch: ${{ github.ref_name }}-pr-branch  # Use the new branch name
+          branch: $NEW_BRANCH  # Use the new branch name
           base: main
           title: 'Automated Pull Request from pre-release to main'
           body: 'This pull request is created automatically from pre-release to main.'
