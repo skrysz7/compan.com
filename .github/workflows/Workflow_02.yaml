@@ -34,8 +34,8 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Wait for 1 minute
-        run: sleep 60
+      - name: Wait 20 seconds
+        run: sleep 20
 
       - name: Merge pull request
         run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
