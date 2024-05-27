@@ -5,11 +5,40 @@ on:
         workflows: ["First Workflow"]
         types:
           - completed
-jobs: 
-    update-readme-with-blog: 
-        runs-on: ubuntu-latest
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+        - run: echo "Triggering Workflow 2!!!"
+        - name: Checkout
+          uses: actions/checkout@v3
 
-        steps:
-          - run: echo "Triggering Wokflow 2"
-          - name: Checkout
-            uses: actions/checkout@v2
+  create-pr:
+    runs-on: ubuntu-latest
+    needs: build-and-test  # This job waits for the build-and-test job
+    if: success()  # Only run if the build and test jobs succeed
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: peter-evans/create-pull-request@v3  # Assuming Node.js 20 compatible
+        with:
+          title: 'Pre-release: [Your Feature Name]'  # Replace with dynamic title
+          body: 'This is a pre-release for [Your Feature Name].'  # Replace with description
+          branch: pre-release  # Target branch (create it if it doesn't exist)
+          base: main
+          labels: pre-release  # Optional label for easy identification
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+  # (Optional) Conditional Merge (use with caution)
+  auto-merge:
+    runs-on: ubuntu-latest
+    needs: create-pr  # This job waits for the create-pr job
+    if: success()  # Only run if the create-pr job succeeds
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: tiangolo/merge-pull-request@v4  # Assuming Node.js 20 compatible (check for updates)
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          # Add conditions for auto-merge (e.g., specific labels, comments, checks)
+          # Example (replace with your conditions): merge_condition: 'includes: needs-review'
