@@ -1,0 +1,15 @@
+name: Workflow_02
+
+on: 
+    workflow_run:
+        workflows: ["Trigger Second Workflow"]
+        types:
+          - completed
+jobs: 
+    update-readme-with-blog: 
+        runs-on: ubuntu-latest
+
+        steps:
+          - run: echo "Triggering Wokflow 2"
+          - name: Checkout
+            uses: actions/checkout@v2
