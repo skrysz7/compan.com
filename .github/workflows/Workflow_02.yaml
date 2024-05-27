@@ -2,7 +2,7 @@ name: Workflow_02
 
 on: 
     workflow_run:
-        workflows: ["Trigger Second Workflow"]
+        workflows: ["First Workflow"]
         types:
           - completed
 jobs: 
