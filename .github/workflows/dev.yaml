@@ -2,14 +2,14 @@ name: First Workflow
 
 on:
   push:
-    branches:fdsaf
+    branches:
       - pre-release  # Trigger this workflow when something is pushed to pre-release
-blabla
+
 jobs:
   trigger_second_workflow:
     runs-on: ubuntu-latest
-blabla
+
     steps:
       - run: echo "First Workflow running!!!"
       - name: Checkout
-        uses: actions/checkout@v2fasdfsd
+        uses: actions/checkout@v3
