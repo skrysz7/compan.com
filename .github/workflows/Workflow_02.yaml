@@ -1,6 +1,7 @@
 name: Workflow_02
 
-on: 
+on:
+    workflow_dispatch: {}  # Empty object for manual triggering
     workflow_run:
         workflows: ["First Workflow"]
         types:
