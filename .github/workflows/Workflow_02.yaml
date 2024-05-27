@@ -29,12 +29,16 @@ jobs:
             echo "Changes detected"
           fi
 
-      - name: create pull request
-        run: gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by Github action'
+      - name: Create pull request
+        run: |
+          pr_url=$(gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by GitHub action' --json url -q ".url")
+          echo "Pull request created: $pr_url"
         env:
-            GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Merge pull request
-        run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
+      - name: Enable auto-merge on pull request
+        run: |
+          pr_number=$(gh pr list --base main --head pre-release --state open --json number --jq '.[0].number')
+          gh pr merge $pr_number --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
         env:
-            GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
