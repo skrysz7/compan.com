@@ -1,5 +1,5 @@
-module "codebuild" {
-    source = "./codebuild"
+module "nexus" {
+    source = "./nexus"
     nexus_domain = "nexus-intg.helvetia.group"
     nexus_rds_secret_name = "intg/nexus-rds"
     nexus_rds_identifier = "xms-nexus-intg"
