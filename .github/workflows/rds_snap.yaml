@@ -1,0 +1,21 @@
+name: Take RDS DB Snapshot
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  take-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::342023131128:role/github_role
+          aws-region: us-east-1
+
+      - name: Take RDS DB Snapshot
+        run: |
+          aws rds create-db-snapshot --db-instance-identifier nexus-intg --db-snapshot-identifier nexus-intg_snapshot
