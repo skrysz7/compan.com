@@ -1,22 +1,41 @@
-name: Workflow_02
+name: Create PR from pre-release to main
 
 on:
-    workflow_dispatch: {}  # Empty object for manual triggering
-    workflow_run:
-        workflows: ["First Workflow"]
-        types:
-          - completed
-jobs:
-  create-pr:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  workflow_dispatch: {}
+  workflow_run:
+    workflows: ["First Workflow"]
+    types:
+      - completed
 
-      - uses: peter-evans/create-pull-request@v6  # Assuming Node.js 20 compatible
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pre-release branch
+        uses: actions/checkout@v3
         with:
-            token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-            commit-message: 'Automated changes from pre-release'
-            branch: main
-            base: pre-release
-            title: 'Automated Pull Request from pre-release to main'
-            body: 'This pull request is created automatically from pre-release to main.'
+          ref: pre-release
+
+      - name: Fetch main branch
+        run: git fetch origin main
+
+      - name: Check for differences
+        run: |
+          if git diff --exit-code origin/main; then
+            echo "No changes detected"
+            exit 0
+          else
+            echo "Changes detected"
+          fi
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          commit-message: 'Automated changes from pre-release'
+          branch: main
+          base: pre-release
+          title: 'Automated Pull Request from pre-release to main'
+          body: 'This pull request is created automatically from pre-release to main.'
