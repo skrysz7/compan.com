@@ -21,4 +21,4 @@ jobs:
 
       - name: Take RDS DB Snapshot
         run: |
-          aws rds create-db-snapshot --db-instance-identifier nexus-intg --db-snapshot-identifier nexus-intg_snapshot
+          aws rds create-db-snapshot --db-instance-identifier nexus-intg --db-snapshot-identifier nexus-intg-snapshot
