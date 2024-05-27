@@ -41,3 +41,7 @@ jobs:
               sleep 30  # Adjust the sleep time as needed
             fi
           done
+
+      - name: Store Snapshot Identifier in SSM
+        run: |
+          aws ssm put-parameter --name "/rds/snapshot/name" --value ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --type String --overwrite
