@@ -16,18 +16,18 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::342023131128:role/github_role
-          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set Snapshot Identifier
         id: set_snapshot_identifier
         run: |
-          snapshot_identifier="nexus-intg-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')"
+          snapshot_identifier="${{ secrets.SNAPSHOT_ID }}-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')"
           echo "::set-output name=snapshot_identifier::$snapshot_identifier"
 
       - name: Take RDS DB Snapshot
         run: |
-          aws rds create-db-snapshot --db-instance-identifier nexus-intg --db-snapshot-identifier ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }}
+          aws rds create-db-snapshot --db-instance-identifier ${{ secrets.SNAPSHOT_ID }} --db-snapshot-identifier ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }}
 
       - name: Wait for Snapshot to Complete
         run: |
