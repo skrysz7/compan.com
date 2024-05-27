@@ -2,6 +2,9 @@ name: Take RDS DB Snapshot
 
 on:
   workflow_dispatch: # Allows manual triggering of the workflow
+  push:
+    branches:
+      - pre-release  # Trigger this workflow when something is pushed to pre-release
 
 jobs:
   take-snapshot:
