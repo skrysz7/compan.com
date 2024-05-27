@@ -22,7 +22,7 @@ jobs:
       - name: Set Snapshot Identifier
         id: set_snapshot_identifier
         run: |
-          snapshot_identifier="nexus-intg-snapshot-$(date +'%Y%m%d%H%M%S')"
+          snapshot_identifier="nexus-intg-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')"
           echo "::set-output name=snapshot_identifier::$snapshot_identifier"
 
       - name: Take RDS DB Snapshot
