@@ -8,7 +8,7 @@ module "nexus_rds" {
   create_db_parameter_group = false
 
   create_db_subnet_group = true
-  subnet_ids             = ["subnet-0a1e9f602c5b302ad"]
+  subnet_ids             = ["subnet-0a1e9f602c5b302ad","subnet-0c75aea6550be7669"]
 
   multi_az = false
 
