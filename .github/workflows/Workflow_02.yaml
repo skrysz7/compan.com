@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: peter-evans/create-pull-request@v3  # Assuming Node.js 20 compatible
+      - uses: peter-evans/create-pull-request@v6  # Assuming Node.js 20 compatible
         with:
           title: 'Pre-release: [Your Feature Name]'  # Replace with dynamic title
           body: 'This is a pre-release for [Your Feature Name].'  # Replace with description
