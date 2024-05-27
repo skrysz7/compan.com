@@ -30,7 +30,7 @@ jobs:
           fi
 
       - name: create pull request
-        run: gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by Github action'
+        run: gh pr create -B main -H pre-release --subject 'Merge pre-release into main' --body 'Created by Github action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
