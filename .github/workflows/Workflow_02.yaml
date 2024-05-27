@@ -1,53 +1,22 @@
-name: Create PR from pre-release to main
+name: Workflow_02
 
 on:
-  workflow_dispatch: {}
-  workflow_run:
-    workflows: ["First Workflow"]
-    types:
-      - completed
-
+    workflow_dispatch: {}  # Empty object for manual triggering
+    workflow_run:
+        workflows: ["First Workflow"]
+        types:
+          - completed
 jobs:
-  create_pr:
+  create-pr:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout pre-release branch
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - uses: peter-evans/create-pull-request@v6  # Assuming Node.js 20 compatible
         with:
-          ref: pre-release
-
-      - name: Set up Git configuration
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}.git
-
-      - name: Fetch main branch
-        run: git fetch origin main
-
-      - name: Check for differences
-        run: |
-          if git diff --exit-code origin/main; then
-            echo "No changes detected"
-            exit 0
-          else
-            echo "Changes detected"
-          fi
-
-      - name: Create a new branch for PR
-        run: |
-          NEW_BRANCH="pr-from-pre-release-$(date +%s)"
-          git checkout -b $NEW_BRANCH
-          git push origin $NEW_BRANCH
-
-      - name: Create Pull Request
-        id: create_pr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          commit-message: 'Automated changes from pre-release'
-          branch: $NEW_BRANCH  # Use the new branch name
-          base: main
-          title: 'Automated Pull Request from pre-release to main'
-          body: 'This pull request is created automatically from pre-release to main.'
+            token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+            commit-message: 'Automated changes from pre-release'
+            branch: main
+            base: pre-release
+            title: 'Automated Pull Request from pre-release to main'
+            body: 'This pull request is created automatically from pre-release to main.'
