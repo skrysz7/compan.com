@@ -3,7 +3,7 @@ name: Create PR from pre-release to main
 on:
   workflow_dispatch: {}
   workflow_run:
-    workflows: ["First Workflow"]
+    workflows: ["Take RDS DB Snapshot"]
     types:
       - completed
 
