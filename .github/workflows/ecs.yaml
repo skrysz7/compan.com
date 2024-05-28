@@ -23,7 +23,7 @@ jobs:
       - name: Download task definition
         id: task-def
         run: |
-          aws ecs describe-task-definition --task-definition hello-world --query taskDefinition > hello-world.json
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
 
       - name: Deploy Amazon ECS task definition
         id: deploy
