@@ -11,20 +11,27 @@ jobs:
       contents: read
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: "eu-central-1"
 
-      - name: Fetch task definition
-        run: aws ecs describe-task-definition --task-definition hello_world:1 > task-def.json
-      
+      - name: Fetch and clean task definition
+        id: fetch-task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world > task-def.json
+          cat task-def.json | jq '.taskDefinition | del(.status, .taskDefinitionArn, .revision, .requiresAttributes, .compatibilities, .registeredBy, .registeredAt)' > task-def-clean.json
+          echo "task-def=$(cat task-def-clean.json)" >> $GITHUB_ENV
+
       - name: Deploy Amazon ECS task definition
         id: deploy
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: task-def.json
+          task-definition: ${{ env.task-def }}
           service: hello-world-service
           cluster: my-cluster
           wait-for-service-stability: true
