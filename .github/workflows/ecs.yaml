@@ -20,7 +20,7 @@ jobs:
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: "hello_world"
-          service: "hello-world-service"
-          cluster: "my-cluster"
+          task-definition: hello_world
+          service: hello-world-service
+          cluster: my-cluster
           wait-for-service-stability: true
