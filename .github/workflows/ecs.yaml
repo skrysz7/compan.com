@@ -20,16 +20,16 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: "eu-central-1"
 
-      - name: Get task definition ARN
-        id: task-def-arn
+      - name: Download task definition
+        id: task-def
         run: |
-          echo "::set-output name=arn::$(aws ecs describe-task-definition --task-definition hello_world --query 'taskDefinition.taskDefinitionArn' --output text)"
+          aws ecs describe-task-definition --task-definition hello_world:1 --query taskDefinition > hello_world.json
 
       - name: Deploy Amazon ECS task definition
         id: deploy
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def-arn.outputs.arn }}
+          task-definition: hello_world.json
           service: hello-world-service
           cluster: my-cluster
           wait-for-service-stability: true
