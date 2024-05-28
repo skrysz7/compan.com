@@ -17,10 +17,14 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: "eu-central-1"
 
+      - name: Fetch task definition
+        run: aws ecs describe-task-definition --task-definition hello_world > task-def.json
+      
       - name: Deploy Amazon ECS task definition
+        id: deploy
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: hello_world
+          task-definition: task-def.json
           service: hello-world-service
           cluster: my-cluster
           wait-for-service-stability: true
