@@ -51,10 +51,3 @@ jobs:
           echo "Please approve the build to continue."
           echo "This step is waiting for manual approval..."
         timeout-minutes: 60
-
-  deploy:
-    needs: approval
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy application
-        run: echo "Deploying application"
