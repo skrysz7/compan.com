@@ -24,7 +24,6 @@ jobs:
         id: task-def
         run: |
           aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
-          echo "::set-output name=task-definition::$task_definition"
 
       - name: Deploy Amazon ECS task definition
         id: deploy
