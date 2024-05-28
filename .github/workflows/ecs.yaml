@@ -18,7 +18,7 @@ jobs:
           aws-region: "eu-central-1"
 
       - name: Fetch task definition
-        run: aws ecs describe-task-definition --task-definition hello_world > task-def.json
+        run: aws ecs describe-task-definition --task-definition hello_world:1 > task-def.json
       
       - name: Deploy Amazon ECS task definition
         id: deploy
