@@ -6,12 +6,21 @@ on:
 jobs:
   ecs:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: "eu-central-1"
+
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: hello_world
-          service: hello-world-service
-          cluster: my-cluster
+          task-definition: "hello_world"
+          service: "hello-world-service"
+          cluster: "my-cluster"
           wait-for-service-stability: true
