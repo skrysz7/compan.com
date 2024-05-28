@@ -153,7 +153,7 @@ resource "aws_lb_target_group" "main" {
 }
 
 
-# ALB Target Group Attachment
+# ALB Target Group Attachment 
 # resource "aws_lb_target_group_attachment" "ecs" {
 #   target_group_arn = aws_lb_target_group.main.arn
 #   target_id        = aws_ecs_service.main.id
