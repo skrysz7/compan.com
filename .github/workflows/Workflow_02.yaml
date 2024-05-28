@@ -41,3 +41,26 @@ jobs:
         run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Wait for Terraform apply to complete
+        id: wait_for_terraform
+        run: |
+          workspace_id="${{ secrets.TFC_WORKSPACE }}"
+          tfe_token="${{ secrets.TFE_TOKEN }}"
+          
+          while true; do
+            run_status=$(curl -s \
+              --header "Authorization: Bearer $tfe_token" \
+              https://app.terraform.io/api/v2/runs?filter[workspace][id]=$workspace_id | jq -r '.data[0].attributes."status"')
+            
+            if [ "$run_status" == "applied" ]; then
+              echo "Terraform apply completed."
+              break
+            elif [ "$run_status" == "errored" ]; then
+              echo "Terraform apply failed."
+              exit 1
+            else
+              echo "Waiting for Terraform apply to complete..."
+              sleep 30
+            fi
+          done
