@@ -13,6 +13,7 @@ resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.${count.index}.0/24"
   availability_zone = element(["eu-central-1a", "eu-central-1b"], count.index)
+  map_public_ip_on_launch = true
 }
 
 # Create an internet gateway
@@ -95,6 +96,7 @@ resource "aws_ecs_service" "main" {
   network_configuration {
     subnets         = aws_subnet.public[*].id
     security_groups = [aws_security_group.web_sg.id]
+    assign_public_ip = true
   }
 }
 
