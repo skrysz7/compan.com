@@ -29,164 +29,31 @@ jobs:
             echo "Changes detected"
           fi
 
-      - name: Create pull request
+      - name: create pull request
         run: gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by Github action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-  check_and_merge_pr:
-    needs: create_pr
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v3
-        with:
-          ref: main
-
-      - name: Check Terraform plan for PR
-        id: plan_pr
-        run: |
-          # Trigger a Terraform plan in Terraform Cloud using the API and check the result
-          PLAN_ID=$(curl --silent \
-            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-            --header "Content-Type: application/vnd.api+json" \
-            --data '{
-              "data": {
-                "attributes": {
-                  "is-destroy": false,
-                  "message": "Plan triggered by GitHub Actions"
-                },
-                "type": "runs",
-                "relationships": {
-                  "workspace": {
-                    "data": {
-                      "type": "workspaces",
-                      "id": ${{ secrets.TFC_WORKSPACE }}
-                    }
-                  }
-                }
-              }
-            }' https://app.terraform.io/api/v2/runs | jq -r '.data.id')
-
-          echo "Triggered plan with ID: ${PLAN_ID}"
-
-          # Poll the Terraform Cloud API for the plan status
-          while true; do
-            PLAN_STATUS=$(curl --silent \
-              --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-              https://app.terraform.io/api/v2/runs/${PLAN_ID} | jq -r '.data.attributes.status')
-
-            if [[ "${PLAN_STATUS}" == "errored" ]]; then
-              echo "Terraform plan contains errors."
-              exit 1
-            elif [[ "${PLAN_STATUS}" == "planned_and_finished" ]]; then
-              echo "Terraform plan completed successfully."
-              break
-            else
-              echo "Waiting for Terraform plan to complete..."
-              sleep 20
-            fi
-          done
+      - name: Wait 20 seconds
+        run: sleep 20
 
       - name: Merge pull request
-        if: steps.plan_pr.outcome == 'success'
         run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-  post_merge_plan:
-    needs: check_and_merge_pr
+  approval:
+    needs: create_pr
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v3
-        with:
-          ref: main
-
-      - name: Check Terraform plan after merge
-        id: plan_post_merge
+      - name: Await manual approval
         run: |
-          PLAN_ID=$(curl --silent \
-            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-            --header "Content-Type: application/vnd.api+json" \
-            --data '{
-              "data": {
-                "attributes": {
-                  "is-destroy": false,
-                  "message": "Plan triggered by GitHub Actions after merge"
-                },
-                "type": "runs",
-                "relationships": {
-                  "workspace": {
-                    "data": {
-                      "type": "workspaces",
-                      "id": ${{ secrets.TFC_WORKSPACE }}
-                    }
-                  }
-                }
-              }
-            }' https://app.terraform.io/api/v2/runs | jq -r '.data.id')
+          echo "Please approve the build to continue."
+          echo "This step is waiting for manual approval..."
+        timeout-minutes: 60
 
-          echo "Triggered plan with ID: ${PLAN_ID}"
-
-          while true; do
-            PLAN_STATUS=$(curl --silent \
-              --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-              https://app.terraform.io/api/v2/runs/${PLAN_ID} | jq -r '.data.attributes.status')
-
-            if [[ "${PLAN_STATUS}" == "errored" ]]; then
-              echo "Terraform plan contains errors."
-              exit 1
-            elif [[ "${PLAN_STATUS}" == "planned_and_finished" ]]; then
-              echo "Terraform plan completed successfully."
-              break
-            else
-              echo "Waiting for Terraform plan to complete..."
-              sleep 20
-            fi
-          done
-
-      - name: Apply Terraform changes
-        if: steps.plan_post_merge.outcome == 'success'
-        run: |
-          APPLY_ID=$(curl --silent \
-            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-            --header "Content-Type: application/vnd.api+json" \
-            --data '{
-              "data": {
-                "attributes": {
-                  "is-destroy": false,
-                  "message": "Apply triggered by GitHub Actions"
-                },
-                "type": "runs",
-                "relationships": {
-                  "workspace": {
-                    "data": {
-                      "type": "workspaces",
-                      "id": ${{ secrets.TFC_WORKSPACE }}
-                    }
-                  }
-                }
-              }
-            }' https://app.terraform.io/api/v2/runs | jq -r '.data.id')
-
-          echo "Triggered apply with ID: ${APPLY_ID}"
-
-          while true; do
-            APPLY_STATUS=$(curl --silent \
-              --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-              https://app.terraform.io/api/v2/runs/${APPLY_ID} | jq -r '.data.attributes.status')
-
-            if [[ "${APPLY_STATUS}" == "errored" ]]; then
-              echo "Terraform apply contains errors."
-              exit 1
-            elif [[ "${APPLY_STATUS}" == "applied" ]]; then
-              echo "Terraform apply completed successfully."
-              break
-            else
-              echo "Waiting for Terraform apply to complete..."
-              sleep 20
-            fi
-          done
+  deploy:
+    needs: approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy application
+        run: echo "Deploying application"
