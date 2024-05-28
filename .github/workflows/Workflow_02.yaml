@@ -44,6 +44,7 @@ jobs:
   approval:
     needs: create_pr
     runs-on: ubuntu-latest
+    environment: apply
     steps:
       - name: Await manual approval
         run: |
