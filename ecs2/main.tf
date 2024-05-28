@@ -90,13 +90,19 @@ resource "aws_ecs_service" "main" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.hello_world.arn
-  desired_count   = 2 # Adjust desired count as needed
+  desired_count   = 1 # Adjust desired count as needed
   launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.main.arn
+    container_name   = "hello_world"
+    container_port   = 80
+  }
   
   network_configuration {
     subnets         = aws_subnet.public[*].id
     security_groups = [aws_security_group.web_sg.id]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 }
 
@@ -133,6 +139,8 @@ resource "aws_lb_target_group" "main" {
   protocol = "HTTP"
   vpc_id   = aws_vpc.main.id
 
+  target_type = "ip"  # Set target group type to "ip"
+
   health_check {
     path                = "/"
     protocol            = "HTTP"
@@ -144,12 +152,13 @@ resource "aws_lb_target_group" "main" {
   }
 }
 
+
 # ALB Target Group Attachment
-resource "aws_lb_target_group_attachment" "ecs" {
-  target_group_arn = aws_lb_target_group.main.arn
-  target_id        = aws_ecs_service.main.id
-  port             = 80
-}
+# resource "aws_lb_target_group_attachment" "ecs" {
+#   target_group_arn = aws_lb_target_group.main.arn
+#   target_id        = aws_ecs_service.main.id
+#   port             = 80
+# }
 
 # Output the ECS cluster name
 output "ecs_cluster_name" {
