@@ -42,7 +42,27 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      - name: Check Terraform plan
+        id: check_plan
+        run: |
+          workspace_id="${{ secrets.TFC_WORKSPACE }}"
+          tfe_token="${{ secrets.TFE_TOKEN }}"
+          
+          plan_output=$(curl -s \
+            --header "Authorization: Bearer $tfe_token" \
+            https://app.terraform.io/api/v2/runs?filter[workspace][id]=$workspace_id | jq -r '.data[0].attributes."status"')
+
+          # Check the plan output for no changes
+          if [[ "$plan_output" == "planned_and_finished" ]]; then
+            echo "Terraform plan has no changes."
+            echo "::set-output name=skip_apply::true"
+          else
+            echo "Terraform plan has changes."
+            echo "::set-output name=skip_apply::false"
+          fi
+
       - name: Wait for Terraform apply to complete
+        if: steps.check_plan.outputs.skip_apply == 'false'
         id: wait_for_terraform
         run: |
           workspace_id="${{ secrets.TFC_WORKSPACE }}"
