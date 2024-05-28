@@ -21,17 +21,15 @@ jobs:
           aws-region: "eu-central-1"
 
       - name: Fetch and clean task definition
-        id: fetch-task-def
+        id: task-def
         run: |
-          aws ecs describe-task-definition --task-definition hello_world > task-def.json
-          cat task-def.json | jq '.taskDefinition | del(.status, .taskDefinitionArn, .revision, .requiresAttributes, .compatibilities, .registeredBy, .registeredAt)' > task-def-clean.json
-          echo "task-def=$(cat task-def-clean.json)" >> $GITHUB_ENV
+          task-definition = aws ecs describe-task-definition --task-definition hello_world > task-def.json
 
       - name: Deploy Amazon ECS task definition
         id: deploy
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ env.task-def }}
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: hello-world-service
           cluster: my-cluster
           wait-for-service-stability: true
