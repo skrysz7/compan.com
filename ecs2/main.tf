@@ -90,7 +90,7 @@ resource "aws_ecs_service" "main" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.hello_world.arn
-  desired_count   = 1
+  desired_count   = 2 # Adjust desired count as needed
   launch_type     = "FARGATE"
   
   network_configuration {
@@ -98,6 +98,57 @@ resource "aws_ecs_service" "main" {
     security_groups = [aws_security_group.web_sg.id]
     assign_public_ip = true
   }
+}
+
+# ALB
+resource "aws_lb" "main" {
+  name               = "my-load-balancer"
+  internal           = false
+  load_balancer_type = "application"
+  subnets            = aws_subnet.public[*].id
+
+  enable_deletion_protection = false
+
+  tags = {
+    Environment = "production"
+  }
+}
+
+# ALB Listener
+resource "aws_lb_listener" "front_end" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+}
+
+# ALB Target Group
+resource "aws_lb_target_group" "main" {
+  name     = "my-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    port                = "traffic-port"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+}
+
+# ALB Target Group Attachment
+resource "aws_lb_target_group_attachment" "ecs" {
+  target_group_arn = aws_lb_target_group.main.arn
+  target_id        = aws_ecs_service.main.id
+  port             = 80
 }
 
 # Output the ECS cluster name
