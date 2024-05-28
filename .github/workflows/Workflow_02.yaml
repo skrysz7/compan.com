@@ -42,22 +42,37 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Check Terraform plan
+      - name: Check latest Terraform plan
         id: check_plan
         run: |
           workspace_id="${{ secrets.TFC_WORKSPACE }}"
           tfe_token="${{ secrets.TFE_TOKEN }}"
-          
-          plan_output=$(curl -s \
-            --header "Authorization: Bearer $tfe_token" \
-            https://app.terraform.io/api/v2/runs?filter[workspace][id]=$workspace_id | jq -r '.data[0].attributes."status"')
 
-          # Check the plan output for no changes
-          if [[ "$plan_output" == "planned_and_finished" ]]; then
-            echo "Terraform plan has no changes."
-            echo "::set-output name=skip_apply::true"
+          # Get the latest run ID for the workspace
+          latest_run_id=$(curl -s \
+            --header "Authorization: Bearer $tfe_token" \
+            "https://app.terraform.io/api/v2/runs?filter[workspace][id]=$workspace_id&page[size]=1" | jq -r '.data[0].id')
+
+          # Get the latest run details
+          plan_status=$(curl -s \
+            --header "Authorization: Bearer $tfe_token" \
+            "https://app.terraform.io/api/v2/runs/$latest_run_id" | jq -r '.data.attributes."status"')
+
+          # Check if the plan has changes
+          if [ "$plan_status" == "planned_and_finished" ]; then
+            has_changes=$(curl -s \
+              --header "Authorization: Bearer $tfe_token" \
+              "https://app.terraform.io/api/v2/runs/$latest_run_id/plan" | jq -r '.data.attributes."resource_changes" | length > 0')
+
+            if [ "$has_changes" == "true" ]; then
+              echo "Terraform plan has changes."
+              echo "::set-output name=skip_apply::false"
+            else
+              echo "Terraform plan has no changes."
+              echo "::set-output name=skip_apply::true"
+            fi
           else
-            echo "Terraform plan has changes."
+            echo "Terraform plan status is not 'planned_and_finished'."
             echo "::set-output name=skip_apply::false"
           fi
 
@@ -67,11 +82,11 @@ jobs:
         run: |
           workspace_id="${{ secrets.TFC_WORKSPACE }}"
           tfe_token="${{ secrets.TFE_TOKEN }}"
-          
+
           while true; do
             run_status=$(curl -s \
               --header "Authorization: Bearer $tfe_token" \
-              https://app.terraform.io/api/v2/runs?filter[workspace][id]=$workspace_id | jq -r '.data[0].attributes."status"')
+              "https://app.terraform.io/api/v2/runs/$latest_run_id" | jq -r '.data.attributes."status"')
             
             if [ "$run_status" == "applied" ]; then
               echo "Terraform apply completed."
