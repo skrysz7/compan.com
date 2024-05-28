@@ -30,6 +30,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: hello_world.json
-          service: hello-world-service
+          service: hello_world_service
           cluster: my-cluster
           wait-for-service-stability: true
