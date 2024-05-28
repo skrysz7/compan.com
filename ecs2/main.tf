@@ -1,5 +1,5 @@
 # provider "aws" {
-#   region = "us-west-2"
+#   region = "eu-central-1"
 # }
 
 # # Create a VPC
@@ -12,7 +12,7 @@
 #   count             = 2
 #   vpc_id            = aws_vpc.main.id
 #   cidr_block        = "10.0.${count.index}.0/24"
-#   availability_zone = element(["us-west-2a", "us-west-2b"], count.index)
+#   availability_zone = element(["eu-central-1a", "eu-central-1b"], count.index)
 # }
 
 # # Create an internet gateway
