@@ -23,13 +23,13 @@ jobs:
       - name: Download task definition
         id: task-def
         run: |
-          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+          task_definition=$(aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json)
 
       - name: Deploy Amazon ECS task definition
         id: deploy
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs }}
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: hello-world-service
           cluster: my-cluster
           wait-for-service-stability: true
