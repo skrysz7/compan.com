@@ -1,4 +1,4 @@
-name: One workflow
+name: Nexus one workflow
 
 on:
   workflow_dispatch: # Allows manual triggering of the workflow
@@ -7,8 +7,15 @@ on:
       - pre-release  # Trigger this workflow when something is pushed to pre-release
 
 jobs:
-  take-snapshot:
+  set-app-to-read-only:
     runs-on: ubuntu-latest
+    steps:
+      - name: Set nexus application to read-only
+      - run: echo "setting app to read-only"
+  
+  take-rds-snapshot:
+    runs-on: ubuntu-latest
+    needs: set-app-to-read-only
     permissions:
       id-token: write
       contents: read
@@ -20,7 +27,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: 123r4f34f
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set Snapshot Identifier
         id: set_snapshot_identifier
@@ -48,9 +55,10 @@ jobs:
       - name: Store Snapshot Identifier in SSM
         run: |
           aws ssm put-parameter --name "/rds/snapshot/name" --value ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --type String --overwrite
+  
   create_pr:
     runs-on: ubuntu-latest
-    needs: take-snapshot
+    needs: take-rds-snapshot
     steps:
       - name: Checkout pre-release branch
         uses: actions/checkout@v3
@@ -81,6 +89,7 @@ jobs:
         run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+            
   approval:
     needs: create_pr
     runs-on: ubuntu-latest
