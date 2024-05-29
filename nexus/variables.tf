@@ -46,7 +46,7 @@ variable "nexus_rds_secret_name" {
 }
 
 variable "nexus_rds_allocated_storage" {
-  default = 10
+  default = 30
   type    = number
 }
 
