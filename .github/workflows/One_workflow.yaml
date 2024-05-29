@@ -1,0 +1,123 @@
+name: One workflow
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  push:
+    branches:
+      - pre-release  # Trigger this workflow when something is pushed to pre-release
+
+jobs:
+  take-snapshot:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set Snapshot Identifier
+        id: set_snapshot_identifier
+        run: |
+          snapshot_identifier="${{ secrets.SNAPSHOT_ID }}-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')"
+          echo "::set-output name=snapshot_identifier::$snapshot_identifier"
+
+      - name: Take RDS DB Snapshot
+        run: |
+          aws rds create-db-snapshot --db-instance-identifier ${{ secrets.SNAPSHOT_ID }} --db-snapshot-identifier ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }}
+
+      - name: Wait for Snapshot to Complete
+        run: |
+          while true; do
+            status=$(aws rds describe-db-snapshots --db-snapshot-identifier ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --query 'DBSnapshots[0].Status' --output text)
+            if [ "$status" = "available" ]; then
+              echo "Snapshot completed successfully."
+              break
+            else
+              echo "Snapshot is still in progress. Waiting..."
+              sleep 30  # Adjust the sleep time as needed
+            fi
+          done
+
+      - name: Store Snapshot Identifier in SSM
+        run: |
+          aws ssm put-parameter --name "/rds/snapshot/name" --value ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --type String --overwrite
+  create_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pre-release branch
+        uses: actions/checkout@v3
+        with:
+          ref: pre-release
+
+      - name: Fetch main branch
+        run: git fetch origin main
+
+      - name: Check for differences
+        run: |
+          if git diff --exit-code origin/main; then
+            echo "No changes detected"
+            exit 0
+          else
+            echo "Changes detected"
+          fi
+
+      - name: create pull request
+        run: gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by Github action'
+        env:
+            GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Wait 20 seconds
+        run: sleep 20
+
+      - name: Merge pull request
+        run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
+        env:
+            GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  approval:
+    needs: create_pr
+    runs-on: ubuntu-latest
+    environment: apply
+    steps:
+      - name: Await manual approval
+        run: |
+          echo "Please approve the build to continue."
+          echo "This step is waiting for manual approval..."
+        timeout-minutes: 60
+
+  ecs:
+    needs: approval
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: "eu-central-1"
+
+      - name: Download task definition
+        id: task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+
+      - name: Deploy Amazon ECS task definition
+        id: deploy
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: hello_world.json
+          service: hello_world_service
+          cluster: my-cluster
+          wait-for-service-stability: true
