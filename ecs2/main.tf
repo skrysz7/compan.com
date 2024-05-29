@@ -56,7 +56,7 @@ resource "aws_security_group" "web_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   lifecycle {
-    ignore_changes = ["*"]
+    ignore_changes = all
   }
 }
 
@@ -108,7 +108,7 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = false
   }
   lifecycle {
-    ignore_changes = ["*"]
+    ignore_changes = all
   }
 }
 
