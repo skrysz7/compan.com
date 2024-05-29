@@ -105,11 +105,11 @@ resource "aws_ecs_service" "main" {
   network_configuration {
     subnets         = aws_subnet.public[*].id
     security_groups = [aws_security_group.web_sg.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
-  lifecycle {
-    ignore_changes = all
-  }
+  # lifecycle {
+  #   ignore_changes = all
+  # }
 }
 
 # ALB
