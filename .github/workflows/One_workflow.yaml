@@ -9,9 +9,9 @@ on:
 jobs:
   set-app-to-read-only:
     runs-on: ubuntu-latest
-    steps:
+    steps:      
       - name: Set nexus application to read-only
-      - run: echo "setting app to read-only"
+        run: echo "setting app to read-only"
   
   take-rds-snapshot:
     runs-on: ubuntu-latest
