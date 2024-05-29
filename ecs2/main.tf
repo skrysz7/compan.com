@@ -55,6 +55,9 @@ resource "aws_security_group" "web_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  lifecycle {
+    ignore_changes = ["*"]
+  }
 }
 
 # ECS cluster
@@ -103,6 +106,9 @@ resource "aws_ecs_service" "main" {
     subnets         = aws_subnet.public[*].id
     security_groups = [aws_security_group.web_sg.id]
     assign_public_ip = false
+  }
+  lifecycle {
+    ignore_changes = ["*"]
   }
 }
 
