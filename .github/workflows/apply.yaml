@@ -40,6 +40,7 @@ jobs:
             https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
           
           echo "Latest Run ID: $LATEST_RUN_ID"
+          echo "LATEST_RUN_ID=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
   
  approval:
     needs: [create_pr]
