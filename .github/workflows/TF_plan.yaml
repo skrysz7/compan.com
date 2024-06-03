@@ -27,20 +27,22 @@ jobs:
           latest_plan_id=$(curl -s -X GET \
             -H "Authorization: Bearer $TF_API_TOKEN" \
             "https://app.terraform.io/api/v2/workspaces/$TF_WORKSPACE/current-run" | jq -r .data.id)
+          echo "Latest Plan ID: $latest_plan_id"
           echo "::set-output name=plan_id::$latest_plan_id"
-      
-      # Add a delay to allow Terraform Cloud some time to generate the plan
-      - name: Wait for Plan Generation
-        run: sleep 60s
 
-      # Step to fetch the plan from Terraform Cloud using the latest plan ID
-      - name: Get Plan Output
-        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
-        id: plan-output
-        with:
-          plan: ws-G9otvMFBeVzEVAnG
-          organization: ${{ env.TF_CLOUD_ORGANIZATION }}
-          workspace: ${{ env.TF_WORKSPACE }}
+      
+      # # Add a delay to allow Terraform Cloud some time to generate the plan
+      # - name: Wait for Plan Generation
+      #   run: sleep 60s
+
+      # # Step to fetch the plan from Terraform Cloud using the latest plan ID
+      # - name: Get Plan Output
+      #   uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+      #   id: plan-output
+      #   with:
+      #     plan: ws-G9otvMFBeVzEVAnG
+      #     organization: ${{ env.TF_CLOUD_ORGANIZATION }}
+      #     workspace: ${{ env.TF_WORKSPACE }}
 
       # - name: Upload Configuration
       #   uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
