@@ -30,7 +30,8 @@ jobs:
           # Fetch the workspace ID
           WORKSPACE_ID=$(curl -s \
             --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
-            https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace | jq -r '.data.id')
+            https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace)
+            # https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace | jq -r '.data.id')
           
           echo "Workspace ID: $WORKSPACE_ID"
           
