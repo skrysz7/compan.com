@@ -23,14 +23,31 @@ jobs:
       - name: Wait for Plan Generation
         run: sleep 60s
       # Step to fetch the latest plan ID from Terraform Cloud
-      - name: Get Latest Plan ID
-        id: latest-plan
+      # - name: Get Latest Plan ID
+      #   id: latest-plan
+      #   run: |
+      #     latest_plan_id=$(curl -s -X GET \
+      #       -H "Authorization: Bearer $TF_API_TOKEN" \
+      #       "https://app.terraform.io/api/v2/workspaces/$TF_WORKSPACE/current-run" | jq -r .data.id)
+      #     echo "Latest Plan ID: $latest_plan_id"
+      #     echo "::set-output name=plan_id::$latest_plan_id"
+      - name: Login to Terraform Cloud (Optional)
+        uses: hashicorp/terraform-github-actions@v1.2.1
+        with:
+          organization: ${{ secrets.TF_CLOUD_ORGANIZATION }}  # Replace with your organization name
+          token: ${{ secrets.TFC_API_TOKEN }}
+    
+      - name: Get Latest Run
         run: |
-          latest_plan_id=$(curl -s -X GET \
-            -H "Authorization: Bearer $TF_API_TOKEN" \
-            "https://app.terraform.io/api/v2/workspaces/$TF_WORKSPACE/current-run" | jq -r .data.id)
-          echo "Latest Plan ID: $latest_plan_id"
-          echo "::set-output name=plan_id::$latest_plan_id"
+          # This command retrieves the details of the latest run
+          run_details=$(curl -s -H "Authorization: Bearer ${{ secrets.TFC_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/${{ secrets.TFC_ORGANIZATION }}/runs?filter=workspace-name=<<YOUR_WORKSPACE_NAME>>&sort=-created_at&limit=1)
+          echo "::debug:: Run Details: $run_details"
+    
+          # Extract the plan ID from the retrieved JSON using jq (assuming it's installed)
+          plan_id=$(echo $run_details | jq -r '.data[0].relationships.plan.data.id')
+          echo "Latest Plan ID: $plan_id"
+    
+      # Use the plan_id variable in subsequent steps...
 
       
       # # Add a delay to allow Terraform Cloud some time to generate the plan
