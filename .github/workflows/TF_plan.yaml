@@ -26,7 +26,7 @@ jobs:
           echo "yo yo"
           #WP=$(curl https://wp.pl)
           #echo "WP: $WP"
-          TEST=$(curl -s --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace)
+          TEST=$(curl -s --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace)
           echo "TEST: $TEST"
 
           
