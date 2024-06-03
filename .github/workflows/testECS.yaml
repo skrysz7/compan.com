@@ -18,10 +18,15 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: "eu-central-1"
-      # - name: Remove current ECS task
-      #   id: task-remove
-      #   run: |
-      #     CURRENT_TASK=$(aws ecs describe-services --cluster xms-nexus --services xms-nexus --query 'services[*].taskDefinition' --output text) | aws ecs describe-task-definition --task-definition $CURRENT_TASK --query 'taskDefinition.containerDefinitions[*].image' --output text | cut -d':' -f2
+      - name: Remove current ECS task
+        id: task-remove
+        run: |
+          task_arns=$(aws ecs list-tasks --cluster my-cluster --service-name hello-world-service | jq -r '.taskArns[]')
+          for task_arn in $task_arns
+          do
+             aws ecs stop-task --cluster my-cluster --task $task_arn
+          done
+
       - name: Download task definition
         id: task-def
         run: |
