@@ -28,6 +28,10 @@ jobs:
             -H "Authorization: Bearer $TF_API_TOKEN" \
             "https://app.terraform.io/api/v2/workspaces/$TF_WORKSPACE/current-run" | jq -r .data.id)
           echo "::set-output name=plan_id::$latest_plan_id"
+      
+      # Add a delay to allow Terraform Cloud some time to generate the plan
+      - name: Wait for Plan Generation
+        run: sleep 30s
 
       # Step to fetch the plan from Terraform Cloud using the latest plan ID
       - name: Get Plan Output
