@@ -22,27 +22,24 @@ jobs:
 
       - name: Get latest Terraform run ID
         id: get-run-id
-        run: |
-          # Set your Terraform Cloud organization and workspace
-          ORG_NAME="compan"
-          WORKSPACE_NAME="compan-workspace"
-          
-          # Fetch the workspace ID
+        run: |         
+          echo "yo yo"
+          echo curl https://wp.pl
           echo curl -s --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace
 
           
-          # Fetch the latest run ID for the workspace
-          LATEST_RUN_ID=$(curl -s \
-            --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
-            https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
+      #     # Fetch the latest run ID for the workspace
+      #     LATEST_RUN_ID=$(curl -s \
+      #       --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
+      #       https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
           
-          echo "Latest Run ID: $LATEST_RUN_ID"
+      #     echo "Latest Run ID: $LATEST_RUN_ID"
           
-          # Set the output for the next steps
-          echo "::set-output name=run_id::$LATEST_RUN_ID"
+      #     # Set the output for the next steps
+      #     echo "::set-output name=run_id::$LATEST_RUN_ID"
         
-      - name: Use latest run ID
-        run: echo "The latest run ID is ${{ steps.get-run-id.outputs.run_id }}"
+      # - name: Use latest run ID
+      #   run: echo "The latest run ID is ${{ steps.get-run-id.outputs.run_id }}"
       # # Add a delay to allow Terraform Cloud some time to generate the plan
       # - name: Wait for Plan Generation
       #   run: sleep 60s
