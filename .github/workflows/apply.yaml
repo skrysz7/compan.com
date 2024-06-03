@@ -39,7 +39,7 @@ jobs:
           
           echo "Latest Run ID: $LATEST_RUN_ID"
     outputs:
-     LATEST_RUN_ID: ${{ steps.create_pr.outputs.LATEST_RUN_ID }}
+     LATEST_RUN_ID: ${{ steps.get-run-id.outputs.LATEST_RUN_ID }}
  approval:
     runs-on: ubuntu-latest
     env:
