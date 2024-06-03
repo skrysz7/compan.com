@@ -1,0 +1,37 @@
+name: Nexus one workflow
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  ecs:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: "eu-central-1"
+      # - name: Remove current ECS task
+      #   id: task-remove
+      #   run: |
+      #     CURRENT_TASK=$(aws ecs describe-services --cluster xms-nexus --services xms-nexus --query 'services[*].taskDefinition' --output text) | aws ecs describe-task-definition --task-definition $CURRENT_TASK --query 'taskDefinition.containerDefinitions[*].image' --output text | cut -d':' -f2
+      - name: Download task definition
+        id: task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+
+      - name: Deploy Amazon ECS task definition
+        id: deploy
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: hello_world.json
+          service: hello-world-service
+          cluster: my-cluster
+          wait-for-service-stability: true
