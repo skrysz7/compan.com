@@ -20,12 +20,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Step to fetch the plan from Terraform Cloud
+      # Step to fetch the latest plan ID from Terraform Cloud
+      - name: Get Latest Plan ID
+        id: latest-plan
+        run: |
+          latest_plan_id=$(curl -s -X GET \
+            -H "Authorization: Bearer $TF_API_TOKEN" \
+            "https://app.terraform.io/api/v2/workspaces/$TF_WORKSPACE/current-run" | jq -r .data.id)
+          echo "::set-output name=plan_id::$latest_plan_id"
+
+      # Step to fetch the plan from Terraform Cloud using the latest plan ID
       - name: Get Plan Output
         uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
         id: plan-output
         with:
-          plan: "Update TF_plan.yaml"  # Use the default plan ID, assuming it's always the same
+          plan: ${{ steps.latest-plan.outputs.plan_id }}
           organization: ${{ env.TF_CLOUD_ORGANIZATION }}
           workspace: ${{ env.TF_WORKSPACE }}
 
