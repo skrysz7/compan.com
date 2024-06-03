@@ -31,7 +31,7 @@ jobs:
       
       # Add a delay to allow Terraform Cloud some time to generate the plan
       - name: Wait for Plan Generation
-        run: sleep 30s
+        run: sleep 60s
 
       # Step to fetch the plan from Terraform Cloud using the latest plan ID
       - name: Get Plan Output
