@@ -10,6 +10,47 @@ env:
   CONFIG_DIRECTORY: "./"
   
 jobs:
+  check-rollback:
+    runs-on: ubuntu-latest
+    outputs:
+      rollback: ${{ steps.check_rollback.outputs.rollback }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get commit message
+        id: get_commit_message
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Check for Rollback keyword
+        id: check_rollback
+        run: |
+          if echo "$COMMIT_MESSAGE" | grep -q "Rollback"; then
+            echo "Rollback keyword found in commit message."
+            echo "::set-output name=rollback::true"
+          else
+            echo "No Rollback keyword found in commit message."
+            echo "::set-output name=rollback::false"
+          fi
+        shell: bash
+
+  next-job:
+    needs: check-rollback
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine action based on Rollback keyword
+        run: |
+          if [ "${{ needs.check-rollback.outputs.rollback }}" == "true" ]; then
+            echo "Rollback keyword found. Skipping to next appropriate steps."
+            # Add steps to handle the rollback scenario here
+          else
+            echo "No Rollback keyword found. Proceeding with normal steps."
+            # Add normal steps here
+          fi
+          
   create_pr:
     runs-on: ubuntu-latest
     outputs:
