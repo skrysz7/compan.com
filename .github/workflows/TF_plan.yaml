@@ -33,6 +33,23 @@ jobs:
             https://app.terraform.io/api/v2/organizations/${ORG_NAME}/workspaces/${WORKSPACE_NAME} | jq -r '.data.id')
           
           echo "Workspace ID: $WORKSPACE_ID"
+          
+          if [ "$WORKSPACE_ID" == "null" ]; then
+            echo "Failed to fetch Workspace ID"
+            exit 1
+          fi
+          
+          # Fetch the latest run ID for the workspace
+          LATEST_RUN_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
+          
+          echo "Latest Run ID: $LATEST_RUN_ID"
+          
+          if [ "$LATEST_RUN_ID" == "null" ]; then
+            echo "Failed to fetch Latest Run ID"
+            exit 1
+          fi
 
       # - name: Get latest Terraform run ID
       #   id: get-run-id
