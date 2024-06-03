@@ -133,11 +133,17 @@ jobs:
 
       - name: Wait 10 seconds
         run: sleep 10
-      
+        
+  approval:
+    needs: create_pr
+    runs-on: ubuntu-latest
+    environment: apply
+    steps:
       - name: Apply Terraform changes
         run: |
           # Assuming you have the latest run ID stored in a variable
-          LATEST_RUN_ID=${{ steps.get-run-id.outputs.latest_run_id }}
+          #LATEST_RUN_ID=${{ steps.get-run-id.outputs.latest_run_id }}
+          LATEST_RUN_ID=${{ needs.create_pr.outputs.latest_run_id }}
           echo "Latest Run ID: $LATEST_RUN_ID"
       
           # Apply the Terraform changes using the Terraform Cloud API
@@ -145,17 +151,6 @@ jobs:
                --header "Content-Type: application/vnd.api+json" \
                --request POST \
                --data "{}" \
-               https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID}/actions/apply    
-
-    
-
-  approval:
-    needs: create_pr
-    runs-on: ubuntu-latest
-    environment: apply
-    steps:
-      - name: Await manual approval
-        run: |
-          echo "Please approve the build to continue."
-          echo "This step is waiting for manual approval..."
+               https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID}/actions/apply   
+      
         timeout-minutes: 60
