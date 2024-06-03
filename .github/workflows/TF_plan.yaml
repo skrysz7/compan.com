@@ -78,7 +78,7 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/show-run@v1.0.0
         id: plan-output
         with:
-          run: ws-G9otvMFBeVzEVAnG
+          run: run-b4YdUo1w5onwpWDo
 
       # - name: Update PR
       #   uses: actions/github-script@v6
