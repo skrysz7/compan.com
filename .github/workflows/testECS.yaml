@@ -37,11 +37,6 @@ jobs:
                 aws ecs stop-task --cluster $cluster --task $task_arn
             done
             
-            # Wait for each task to stop
-            echo "Waiting for tasks to stop"
-            aws ecs wait tasks-stopped --cluster $cluster --tasks $task_arns
-          fi
-
       - name: Download task definition
         id: task-def
         run: |
