@@ -18,14 +18,29 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: "eu-central-1"
-      - name: Remove current ECS task
+
+      - name: Remove current ECS tasks
         id: task-remove
         run: |
-          task_arns=$(aws ecs list-tasks --cluster my-cluster --service-name hello-world-service | jq -r '.taskArns[]')
-          for task_arn in $task_arns
-          do
-             aws ecs stop-task --cluster my-cluster --task $task_arn
-          done
+          cluster="my-cluster"
+          service="hello-world-service"
+          
+          # List tasks and store task ARNs in an array
+          task_arns=$(aws ecs list-tasks --cluster $cluster --service-name $service --query "taskArns[]" --output text)
+          
+          if [ -z "$task_arns" ]; then
+            echo "No tasks found for service $service in cluster $cluster."
+          else
+            # Stop each task
+            for task_arn in $task_arns; do
+                echo "Stopping task $task_arn"
+                aws ecs stop-task --cluster $cluster --task $task_arn
+            done
+            
+            # Wait for each task to stop
+            echo "Waiting for tasks to stop"
+            aws ecs wait tasks-stopped --cluster $cluster --tasks $task_arns
+          fi
 
       - name: Download task definition
         id: task-def
