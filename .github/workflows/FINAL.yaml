@@ -55,26 +55,6 @@ jobs:
           configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
           plan_only: true
 
-      - name: Wait for Plan to Complete
-        id: wait-for-plan
-        run: |
-          RUN_ID=${{ steps.plan-run.outputs.run_id }}
-          for i in {1..60}; do
-            STATUS=$(curl -s \
-              --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-              https://app.terraform.io/api/v2/runs/${RUN_ID} | jq -r '.data.attributes.status')
-            echo "Current plan status: $STATUS"
-            if [ "$STATUS" == "Planned and finished" ] || [ "$STATUS" == "errored" ]; then
-              break
-            fi
-            sleep 10
-          done
-          if [ "$STATUS" != "Planned and finished" ]; then
-            echo "Plan did not complete successfully"
-            exit 1
-          fi
-          echo "::set-output name=plan_id::${RUN_ID}"
-
       - name: Get Plan Output
         id: plan-output
         run: |
