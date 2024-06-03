@@ -1,0 +1,75 @@
+name: 'Prod deployment for AWS'
+on:
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: ./
+
+env:
+  # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+  # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  # AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+  # AWS_BUCKET_KEY: ${{ secrets.AWS_BUCKET_KEY }}
+  # AWS_REGION: ${{ secrets.AWS_REGION }}
+  # AWS_DYNAMODB_TABLE: ${{ secrets.AWS_DYNAMODB_TABLE }}
+  TERRAFORM_VERSION: 1.6.2  
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    environment: apply
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+                  
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+    
+    # - name: Terraform Init
+    #   run: terraform init -backend-config=region=$AWS_REGION -backend-config=dynamodb_table=$AWS_DYNAMODB_TABLE -backend-config=bucket=$AWS_BUCKET -backend-config=key=$AWS_BUCKET_KEY
+    
+    # - name: Terraform Validate
+    #   run: terraform validate -no-color
+    
+    - name: Plan
+      run: |
+        rm -f tfplan
+        terraform plan -out tfplan
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: tf-plan
+        path: tfplan
+        if-no-files-found: error
+        retention-days: 14 #by default 90 days
+
+  apply:
+    runs-on: ubuntu-latest
+    environment: apply
+    needs: plan
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+    # - name: Terraform Init
+    #   run: terraform init -backend-config=region=$AWS_REGION -backend-config=dynamodb_table=$AWS_DYNAMODB_TABLE -backend-config=bucket=$AWS_BUCKET -backend-config=key=$AWS_BUCKET_KEY
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: tf-plan
+        path: tfplan
+                
+    - name: Apply
+      run: terraform apply tfplan/tfplan
