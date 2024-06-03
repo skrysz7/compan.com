@@ -1,4 +1,4 @@
-name: Nexus one workflow
+name: ecs test
 
 on:
   workflow_dispatch: # Allows manual triggering of the workflow
