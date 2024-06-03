@@ -116,6 +116,11 @@ jobs:
               echo "Failed to fetch Plan Status"
               exit 1
             fi
+
+            if [ "$PLAN_STATUS" == "planned_and_finished" ]; then
+              echo "No changes to apply"
+              exit 1
+            fi
             
             if [ "$PLAN_STATUS" != "planned" ]; then
               echo "Plan not yet finished. Waiting for 30 seconds..."
