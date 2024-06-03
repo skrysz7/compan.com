@@ -20,7 +20,7 @@ env:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    environment: apply
+    # environment: apply
     steps:
     - name: Checkout
       uses: actions/checkout@v3
