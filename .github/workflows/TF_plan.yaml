@@ -24,8 +24,9 @@ jobs:
         id: get-run-id
         run: |         
           echo "yo yo"
-          echo curl https://wp.pl
-          echo curl -s --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace
+          WP=$(curl https://wp.pl)
+          echo "WP: $WP"
+          #echo curl -s --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace
 
           
       #     # Fetch the latest run ID for the workspace
