@@ -131,13 +131,12 @@ jobs:
           # Set the output for the next steps
           echo "::set-output name=plan_status::$PLAN_STATUS"
           # Set the LATEST_RUN_ID output for the next steps
-          echo "::set-output name=latest_run_id::$LATEST_RUN_ID"
+          echo "LATEST_RUN_ID=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
+          #echo "::set-output name=latest_run_id::$LATEST_RUN_ID"
       
       - name: Use latest plan status
         run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
 
-      - name: Wait 10 seconds
-        run: sleep 10
         
   approval:
     needs: create_pr
@@ -148,7 +147,7 @@ jobs:
         run: |
           # Assuming you have the latest run ID stored in a variable
           #LATEST_RUN_ID=${{ steps.get-run-id.outputs.latest_run_id }}
-          LATEST_RUN_ID=${{ needs.create_pr.outputs.latest_run_id }}
+          LATEST_RUN_ID: ${{ needs.create_pr.outputs.latest_run_id }}
           echo "Latest Run ID: $LATEST_RUN_ID"
       
           # Apply the Terraform changes using the Terraform Cloud API
