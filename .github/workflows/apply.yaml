@@ -50,13 +50,13 @@ jobs:
       - name: Apply Terraform changes
         run: |
           # Assuming you have the latest run ID stored in a variable
-          echo "Latest Run ID: $LATEST_RUN_ID"
+          echo "Latest Run ID: ${{ env.LATEST_RUN_ID }}"
       
           # Apply the Terraform changes using the Terraform Cloud API
           curl --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
                --header "Content-Type: application/vnd.api+json" \
                --request POST \
                --data "{}" \
-               https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID}/actions/apply   
+               https://app.terraform.io/api/v2/runs/${{ env.LATEST_RUN_ID }}/actions/apply   
       
         timeout-minutes: 60
