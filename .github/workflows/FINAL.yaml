@@ -61,53 +61,65 @@ jobs:
         with:
           plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
 
-      - name: Update PR
-        uses: actions/github-script@v6
-        id: plan-comment
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // 1. Retrieve existing bot comments for the PR
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Terraform Cloud Plan Output')
-            });
-            const output = `#### Terraform Cloud Plan Output
-               \`\`\`
-               Plan: ${{ steps.plan-output.outputs.add }} to add, ${{ steps.plan-output.outputs.change }} to change, ${{ steps.plan-output.outputs.destroy }} to destroy.
-               \`\`\`
-               [Terraform Cloud Plan](${{ steps.plan-run.outputs.run_link }})
-               `;
-            // 3. Delete previous comment so PR timeline makes sense
-            if (botComment) {
-              github.rest.issues.deleteComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-              });
-            }
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
+      - name: Merge pull request
+        run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
+        env:
+            GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-  #     - name: Merge pull request
-  #       run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
-  #       env:
-  #           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-  # approval:
-  #   needs: create_pr
-  #   runs-on: ubuntu-latest
-  #   environment: apply
-  #   steps:
-  #     - name: Await manual approval
-  #       run: |
-  #         echo "Please approve the build to continue."
-  #         echo "This step is waiting for manual approval..."
-  #       timeout-minutes: 60
+      - name: Get latest Terraform run ID
+        id: get-run-id
+        run: |
+          # Set your Terraform Cloud organization and workspace
+          ORG_NAME="compan"
+          WORKSPACE_NAME="compan-workspace"
+        
+          # Fetch the workspace ID
+          WORKSPACE_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/organizations/${ORG_NAME}/workspaces/${WORKSPACE_NAME} | jq -r '.data.id')
+          
+          echo "Workspace ID: $WORKSPACE_ID"
+          
+          if [ "$WORKSPACE_ID" == "null" ]; then
+            echo "Failed to fetch Workspace ID"
+            exit 1
+          fi
+          
+          # Fetch the latest run ID for the workspace
+          LATEST_RUN_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
+          
+          echo "Latest Run ID: $LATEST_RUN_ID"
+          
+          if [ "$LATEST_RUN_ID" == "null" ]; then
+            echo "Failed to fetch Latest Run ID"
+            exit 1
+          fi
+
+          # Fetch the plan status for the latest run
+          PLAN_STATUS=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID} | jq -r '.data.attributes.status')
+        
+          echo "Plan Status: $PLAN_STATUS"
+        
+          if [ "$PLAN_STATUS" == "null" ]; then
+            echo "Failed to fetch Plan Status"
+            exit 1
+          fi
+        
+          # Set the output for the next steps
+          echo "::set-output name=plan_status::$PLAN_STATUS"
+      - name: Use latest plan status
+        run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
+  approval:
+    needs: create_pr
+    runs-on: ubuntu-latest
+    environment: apply
+    steps:
+      - name: Await manual approval
+        run: |
+          echo "Please approve the build to continue."
+          echo "This step is waiting for manual approval..."
+        timeout-minutes: 60
