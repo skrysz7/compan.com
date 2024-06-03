@@ -32,7 +32,7 @@ jobs:
       #     echo "Latest Plan ID: $latest_plan_id"
       #     echo "::set-output name=plan_id::$latest_plan_id"
       - name: Login to Terraform Cloud (Optional)
-        uses: hashicorp/terraform-github-actions@v1.2.1
+        uses: hashicorp/terraform-github-actions@v2.0.1
         with:
           organization: ${{ secrets.TF_CLOUD_ORGANIZATION }}  # Replace with your organization name
           token: ${{ secrets.TFC_API_TOKEN }}
