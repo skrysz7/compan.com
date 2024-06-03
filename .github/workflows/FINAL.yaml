@@ -13,8 +13,15 @@ env:
   CONFIG_DIRECTORY: "./"
   
 jobs:
+  set-app-to-read-only:
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Set nexus application to read-only
+        run: echo "setting app to read-only"
+        
   check-rollback:
     runs-on: ubuntu-latest
+    needs: set-app-to-read-only
     outputs:
       rollback: ${{ steps.check_rollback.outputs.rollback }}
     steps:
@@ -237,3 +244,50 @@ jobs:
                https://app.terraform.io/api/v2/runs/$LATEST_RUN_ID/actions/apply   
       
         timeout-minutes: 60
+
+  ecs:
+    needs: approval
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: "eu-central-1"
+
+      - name: Download task definition
+        id: task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+
+      - name: Deploy Amazon ECS task definition
+        id: deploy
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: hello_world.json
+          service: hello-world-service
+          cluster: my-cluster
+          wait-for-service-stability: true
+
+  app-health-check:
+      runs-on: ubuntu-latest
+      needs: ecs
+      if: always()
+      steps:      
+        - name: Nexus app health-check
+          run: echo "getting app helath-check"
+
+  set-app-to-read-write:
+      runs-on: ubuntu-latest
+      needs: app-health-check
+      if: always()
+      steps:      
+        - name: Set nexus application to read-write
+          run: echo "setting app to read-write"
