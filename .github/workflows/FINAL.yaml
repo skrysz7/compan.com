@@ -64,12 +64,12 @@ jobs:
               --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
               https://app.terraform.io/api/v2/runs/${RUN_ID} | jq -r '.data.attributes.status')
             echo "Current plan status: $STATUS"
-            if [ "$STATUS" == "planned" ] || [ "$STATUS" == "errored" ]; then
+            if [ "$STATUS" == "Planned and finished" ] || [ "$STATUS" == "errored" ]; then
               break
             fi
             sleep 10
           done
-          if [ "$STATUS" != "planned" ]; then
+          if [ "$STATUS" != "Planned and finished" ]; then
             echo "Plan did not complete successfully"
             exit 1
           fi
