@@ -1,0 +1,29 @@
+name: APPLY
+
+on:
+  workflow_dispatch: {}
+  
+env:
+  TF_CLOUD_ORGANIZATION: "compan"
+  TF_API_TOKEN: "${{ secrets.TFE_TOKEN }}"
+  TF_WORKSPACE: "compan-workspace"
+  CONFIG_DIRECTORY: "./"
+  
+jobs:
+ approval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply Terraform changes
+        run: |
+          # Assuming you have the latest run ID stored in a variable
+          LATEST_RUN_ID=run-HjVxFqxeDQfauSXy
+          echo "Latest Run ID: $LATEST_RUN_ID"
+      
+          # Apply the Terraform changes using the Terraform Cloud API
+          curl --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+               --header "Content-Type: application/vnd.api+json" \
+               --request POST \
+               --data "{}" \
+               https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID}/actions/apply   
+      
+        timeout-minutes: 60
