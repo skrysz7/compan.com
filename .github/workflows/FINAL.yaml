@@ -31,7 +31,7 @@ jobs:
             echo "Changes detected"
           fi
 
-      - name: create pull request
+      - name: Create pull request
         run: gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by Github action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -55,64 +55,48 @@ jobs:
           configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
           plan_only: true
 
+      - name: Wait for Plan to Complete
+        id: wait-for-plan
+        run: |
+          RUN_ID=${{ steps.plan-run.outputs.run_id }}
+          for i in {1..60}; do
+            STATUS=$(curl -s \
+              --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+              https://app.terraform.io/api/v2/runs/${RUN_ID} | jq -r '.data.attributes.status')
+            echo "Current plan status: $STATUS"
+            if [ "$STATUS" == "planned" ] || [ "$STATUS" == "errored" ]; then
+              break
+            fi
+            sleep 10
+          done
+          if [ "$STATUS" != "planned" ]; then
+            echo "Plan did not complete successfully"
+            exit 1
+          fi
+          echo "::set-output name=plan_id::${RUN_ID}"
+
       - name: Get Plan Output
-        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
         id: plan-output
-        with:
-          plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+        run: |
+          PLAN_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/runs/${{ steps.plan-run.outputs.run_id }} | jq -r '.data.relationships.plan.data.id')
+          PLAN_OUTPUT=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/plans/${PLAN_ID} | jq -r '.data.attributes.json')
+          echo "Plan Output: $PLAN_OUTPUT"
+          echo "::set-output name=plan_output::${PLAN_OUTPUT}"
+
+      - name: Print Plan Changes
+        run: |
+          echo "The planned changes are:"
+          echo "${{ steps.plan-output.outputs.plan_output }}"
 
       - name: Merge pull request
         run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Get latest Terraform run ID
-        id: get-run-id
-        run: |
-          # Set your Terraform Cloud organization and workspace
-          ORG_NAME="compan"
-          WORKSPACE_NAME="compan-workspace"
-        
-          # Fetch the workspace ID
-          WORKSPACE_ID=$(curl -s \
-            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-            https://app.terraform.io/api/v2/organizations/${ORG_NAME}/workspaces/${WORKSPACE_NAME} | jq -r '.data.id')
-          
-          echo "Workspace ID: $WORKSPACE_ID"
-          
-          if [ "$WORKSPACE_ID" == "null" ]; then
-            echo "Failed to fetch Workspace ID"
-            exit 1
-          fi
-          
-          # Fetch the latest run ID for the workspace
-          LATEST_RUN_ID=$(curl -s \
-            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-            https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
-          
-          echo "Latest Run ID: $LATEST_RUN_ID"
-          
-          if [ "$LATEST_RUN_ID" == "null" ]; then
-            echo "Failed to fetch Latest Run ID"
-            exit 1
-          fi
-
-          # Fetch the plan status for the latest run
-          PLAN_STATUS=$(curl -s \
-            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
-            https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID} | jq -r '.data.attributes.status')
-        
-          echo "Plan Status: $PLAN_STATUS"
-        
-          if [ "$PLAN_STATUS" == "null" ]; then
-            echo "Failed to fetch Plan Status"
-            exit 1
-          fi
-        
-          # Set the output for the next steps
-          echo "::set-output name=plan_status::$PLAN_STATUS"
-      - name: Use latest plan status
-        run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
   approval:
     needs: create_pr
     runs-on: ubuntu-latest
