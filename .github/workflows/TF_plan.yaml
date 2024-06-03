@@ -22,12 +22,26 @@ jobs:
 
       - name: Get latest Terraform run ID
         id: get-run-id
-        run: |         
-          echo "yo yo"
-          #WP=$(curl https://wp.pl)
-          #echo "WP: $WP"
-          TEST=$(curl -s --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace | jq -r '.data.relationships["latest-run"].data.id')
-          echo "TEST: $TEST"
+        run: |
+          # Set your Terraform Cloud organization and workspace
+          ORG_NAME="compan"
+          WORKSPACE_NAME="compan-workspace"
+        
+          # Fetch the workspace ID
+          WORKSPACE_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/organizations/${ORG_NAME}/workspaces/${WORKSPACE_NAME} | jq -r '.data.id')
+          
+          echo "Workspace ID: $WORKSPACE_ID"
+
+      # - name: Get latest Terraform run ID
+      #   id: get-run-id
+      #   run: |         
+      #     echo "yo yo"
+      #     #WP=$(curl https://wp.pl)
+      #     #echo "WP: $WP"
+      #     LATEST_RUN_ID=$(curl -s --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" https://app.terraform.io/api/v2/organizations/compan/workspaces/compan-workspace | jq -r '.data.relationships["latest-run"].data.id')
+      #     echo "LATEST_RUN_ID: $LATEST_RUN_ID"
 
           
       #     # Fetch the latest run ID for the workspace
