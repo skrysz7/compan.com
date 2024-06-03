@@ -131,8 +131,8 @@ jobs:
       - name: Use latest plan status
         run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
 
-      - name: Wait 20 seconds
-        run: sleep 20
+      - name: Wait 10 seconds
+        run: sleep 10
       
       - name: Apply Terraform changes
         run: |
@@ -142,9 +142,11 @@ jobs:
       
           # Apply the Terraform changes using the Terraform Cloud API
           curl --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+               --header "Content-Type: application/vnd.api+json" \
                --request POST \
                --data "{}" \
-               https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID}/actions/apply
+               https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID}/actions/apply    
+
     
 
   approval:
