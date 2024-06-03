@@ -1,75 +1,74 @@
-name: 'Prod deployment for AWS'
+name: "Terraform"
+
 on:
   pull_request:
     branches:
       - main
 
-defaults:
-  run:
-    working-directory: ./
-
-env:
-  # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-  # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  # AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
-  # AWS_BUCKET_KEY: ${{ secrets.AWS_BUCKET_KEY }}
-  # AWS_REGION: ${{ secrets.AWS_REGION }}
-  # AWS_DYNAMODB_TABLE: ${{ secrets.AWS_DYNAMODB_TABLE }}
-  TERRAFORM_VERSION: 1.6.2  
-
 jobs:
-  plan:
+  terraform:
+    name: "Terraform"
     runs-on: ubuntu-latest
-    # environment: apply
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-                  
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ env.TERRAFORM_VERSION }}
-    
-    # - name: Terraform Init
-    #   run: terraform init -backend-config=region=$AWS_REGION -backend-config=dynamodb_table=$AWS_DYNAMODB_TABLE -backend-config=bucket=$AWS_BUCKET -backend-config=key=$AWS_BUCKET_KEY
-    
-    # - name: Terraform Validate
-    #   run: terraform validate -no-color
-    
-    - name: Plan
-      run: |
-        rm -f tfplan
-        terraform plan -out tfplan
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: tf-plan
-        path: tfplan
-        if-no-files-found: error
-        retention-days: 14 #by default 90 days
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.2
 
-  apply:
-    runs-on: ubuntu-latest
-    environment: apply
-    needs: plan
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ env.TERRAFORM_VERSION }}
+      - name: Terraform Init
+        id: init
+        run: terraform init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
 
-    # - name: Terraform Init
-    #   run: terraform init -backend-config=region=$AWS_REGION -backend-config=dynamodb_table=$AWS_DYNAMODB_TABLE -backend-config=bucket=$AWS_BUCKET -backend-config=key=$AWS_BUCKET_KEY
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
 
-    - name: Download Artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: tf-plan
-        path: tfplan
-                
-    - name: Apply
-      run: terraform apply tfplan/tfplan
+      - uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization \`${{ steps.init.outcome }}\`
+            #### Terraform Validation \`${{ steps.validate.outcome }}\`
+            #### Terraform Plan \`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -input=false
