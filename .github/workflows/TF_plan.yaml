@@ -19,6 +19,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Get Terraform Cloud Run ID
+        id: terraform-run-id
+        run: |
+          WORKSPACE_ID=$TF_WORKSPACE
+          LATEST_RUN_ID=$(curl -s \
+                          -H "Authorization: Bearer $TF_API_TOKEN" \
+                          "https://app.terraform.io/api/v2/runs?filter[organization][name]=your_organization_name&filter[workspace][id]=$WORKSPACE_ID&sort_by=created-at" \
+                          | jq -r '.data[0].id')
+          echo "Latest Terraform Cloud Run ID: $LATEST_RUN_ID"
+          
+      - name: Use Run ID in Subsequent Steps
+        run: |
+          echo "Latest Run ID from Terraform Cloud: ${{ steps.terraform-run-id.outputs.latest_run_id }}"
       # # Add a delay to allow Terraform Cloud some time to generate the plan
       # - name: Wait for Plan Generation
       #   run: sleep 60s
@@ -74,17 +88,17 @@ jobs:
       #     configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
       #     plan_only: true
 
-      - name: Get Run Output
-        uses: hashicorp/tfc-workflows-github/actions/show-run@v1.0.0
-        id: run-output
-        with:
-          run: run-b4YdUo1w5onwpWDo
+      # - name: Get Run Output
+      #   uses: hashicorp/tfc-workflows-github/actions/show-run@v1.0.0
+      #   id: run-output
+      #   with:
+      #     run: run-b4YdUo1w5onwpWDo
           
-      - name: Get Plan Output
-        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
-        id: plan-output
-        with:
-          plan: plan-LjZRnADBridcNP2R
+      # - name: Get Plan Output
+      #   uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+      #   id: plan-output
+      #   with:
+      #     plan: plan-LjZRnADBridcNP2R
 
       # - name: Update PR
       #   uses: actions/github-script@v6
