@@ -66,6 +66,9 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      - name: Wait 20 seconds
+        run: sleep 20
+
       - name: Get latest Terraform run ID
         id: get-run-id
         run: |
