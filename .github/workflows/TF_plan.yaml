@@ -25,7 +25,7 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
         id: plan-output
         with:
-          plan: "default"  # Use the default plan ID, assuming it's always the same
+          plan: "Update TF_plan.yaml"  # Use the default plan ID, assuming it's always the same
           organization: ${{ env.TF_CLOUD_ORGANIZATION }}
           workspace: ${{ env.TF_WORKSPACE }}
 
