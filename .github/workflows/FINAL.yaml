@@ -147,7 +147,7 @@ jobs:
         run: |
           # Assuming you have the latest run ID stored in a variable
           #LATEST_RUN_ID=${{ steps.get-run-id.outputs.latest_run_id }}
-          LATEST_RUN_ID: ${{ needs.create_pr.outputs.latest_run_id }}
+          LATEST_RUN_ID=${{ needs.create_pr.outputs.latest_run_id }}
           echo "Latest Run ID: $LATEST_RUN_ID"
       
           # Apply the Terraform changes using the Terraform Cloud API
