@@ -31,16 +31,11 @@ jobs:
       #       "https://app.terraform.io/api/v2/workspaces/$TF_WORKSPACE/current-run" | jq -r .data.id)
       #     echo "Latest Plan ID: $latest_plan_id"
       #     echo "::set-output name=plan_id::$latest_plan_id"
-      - name: Login to Terraform Cloud (Optional)
-        uses: hashicorp/terraform-github-actions@v2.0.1
-        with:
-          organization: ${{ secrets.TF_CLOUD_ORGANIZATION }}  # Replace with your organization name
-          token: ${{ secrets.TFC_API_TOKEN }}
-    
+  
       - name: Get Latest Run
         run: |
           # This command retrieves the details of the latest run
-          run_details=$(curl -s -H "Authorization: Bearer ${{ secrets.TFC_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/${{ secrets.TFC_ORGANIZATION }}/runs?filter=workspace-name=<<YOUR_WORKSPACE_NAME>>&sort=-created_at&limit=1)
+          run_details=$(curl -s -H "Authorization: Bearer ${{ secrets.TFC_API_TOKEN }}" https://app.terraform.io/api/v2/organizations/${{ secrets.TF_CLOUD_ORGANIZATION }}/runs?filter=workspace-name=${{ secrets.TF_WORKSPACE }}&sort=-created_at&limit=1)
           echo "::debug:: Run Details: $run_details"
     
           # Extract the plan ID from the retrieved JSON using jq (assuming it's installed)
