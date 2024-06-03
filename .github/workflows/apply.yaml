@@ -44,19 +44,19 @@ jobs:
  approval:
     needs: [create_pr]
     runs-on: ubuntu-latest
-    env:
-      LATEST_RUN_ID: ${{ needs.create_pr.outputs.LATEST_RUN_ID }}
+    # env:
+    #   LATEST_RUN_ID: ${{ needs.create_pr.outputs.LATEST_RUN_ID }}
     steps:
       - name: Apply Terraform changes
         run: |
           # Assuming you have the latest run ID stored in a variable
-          echo "Latest Run ID: ${{ env.LATEST_RUN_ID }}"
+          echo "Latest Run ID: ${{ needs.create_pr.outputs.LATEST_RUN_ID }}"
       
           # Apply the Terraform changes using the Terraform Cloud API
           curl --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
                --header "Content-Type: application/vnd.api+json" \
                --request POST \
                --data "{}" \
-               https://app.terraform.io/api/v2/runs/${{ env.LATEST_RUN_ID }}/actions/apply   
+               https://app.terraform.io/api/v2/runs/${{ needs.create_pr.outputs.LATEST_RUN_ID }}/actions/apply   
       
         timeout-minutes: 60
