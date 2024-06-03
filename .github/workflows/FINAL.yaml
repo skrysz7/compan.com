@@ -125,6 +125,8 @@ jobs:
           
           # Set the output for the next steps
           echo "::set-output name=plan_status::$PLAN_STATUS"
+          # Set the LATEST_RUN_ID output for the next steps
+          echo "::set-output name=latest_run_id::$LATEST_RUN_ID"
       
       - name: Use latest plan status
         run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
