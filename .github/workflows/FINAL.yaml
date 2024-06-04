@@ -149,6 +149,9 @@ jobs:
         with:
           plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
 
+      - name: Display Plan Output
+        run: echo "${{ steps.plan-output.outputs.plan }}"
+
       - name: Merge pull request
         run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
         env:
