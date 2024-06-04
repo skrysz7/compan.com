@@ -16,10 +16,10 @@ jobs:
   check_plan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout pre-release branch
+      - name: Checkout main branch
         uses: actions/checkout@v3
         with:
-          ref: pre-release
+          ref: main
           
       - name: Upload Configuration
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
