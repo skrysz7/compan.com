@@ -60,6 +60,7 @@ jobs:
           else
             echo "Changes detected."
           fi
+        shell: bash
   set-app-to-read-only:
     needs: check_plan
     runs-on: ubuntu-latest
