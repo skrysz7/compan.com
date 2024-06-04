@@ -125,7 +125,7 @@ resource "aws_lb" "main" {
   enable_deletion_protection = false
 
   tags = {
-    Environment = "test"
+    Environment = "12345"
   }
 }
 
