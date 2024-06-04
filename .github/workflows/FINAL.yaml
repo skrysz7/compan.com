@@ -89,12 +89,15 @@ jobs:
 
       - name: Store Snapshot Identifier in SSM
         run: |
-          aws ssm put-parameter --name "/rds/snapshot/name" --value ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --type String --overwrite        
+          aws ssm put-parameter --name "/rds/snapshot/name" --value ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --type String --overwrite    
+
+      - name: Store ECR Image Identifier in SSM
+        run: |
+          aws ssm put-parameter --name "/ecr/image/tag" --value "$(aws ecr describe-images --repository-name ${{ secrets.AWS_REPOSITORY }} --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' --output text)" --type String --overwrite
   
   create_pr:
     runs-on: ubuntu-latest
     needs: check-rollback
-    if: needs.check-rollback.outputs.rollback == 'true' || needs.take-rds-snapshot.result == 'success'
     outputs:
      LATEST_RUN_ID: ${{ steps.get-run-id.outputs.LATEST_RUN_ID }}
 
