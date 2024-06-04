@@ -318,14 +318,24 @@ jobs:
 
   app-health-check:
       runs-on: ubuntu-latest
-      needs: ecs
-      steps:      
-        - name: Nexus app health-check
-          run: echo "getting app helath-check"
+      steps:
+      - name: Check if the website is accessible
+        id: check_website
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.URL }})
+          if [ "$response" -eq 200 ]; then
+            echo "Website is accessible."
+            echo "::set-output name=status::success"
+          else
+            echo "Website is not accessible. HTTP status code: $response"
+            echo "::set-output name=status::failure"
+            exit 1
+          fi
 
   set-app-to-read-write:
       runs-on: ubuntu-latest
       needs: app-health-check
+      if: needs.app-health-check.outputs.status == 'success'
       steps:      
         - name: Set nexus application to read-write
           run: echo "setting app to read-write"
