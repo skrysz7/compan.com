@@ -221,7 +221,6 @@ jobs:
           echo "::set-output name=plan_status::$PLAN_STATUS"
           # Set the LATEST_RUN_ID output for the next steps
           echo "LATEST_RUN_ID=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
-          #echo "::set-output name=latest_run_id::$LATEST_RUN_ID"
       
       - name: Use latest plan status
         run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
@@ -318,6 +317,8 @@ jobs:
 
   app-health-check:
       runs-on: ubuntu-latest
+      outputs:
+       status: ${{ steps.app-health-check.outputs.status }}
       needs: ecs
       steps:
       - name: Check if the website is accessible
@@ -327,9 +328,13 @@ jobs:
           if [ "$response" -eq 200 ]; then
             echo "Website is accessible."
             echo "::set-output name=status::success"
+            # Set the LATEST_RUN_ID output for the next steps
+            echo "status=$status" >> $GITHUB_OUTPUT
           else
             echo "Website is not accessible. HTTP status code: $response"
             echo "::set-output name=status::failure"
+            # Set the LATEST_RUN_ID output for the next steps
+            echo "status=$status" >> $GITHUB_OUTPUT
             exit 1
           fi
 
