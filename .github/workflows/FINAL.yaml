@@ -58,11 +58,13 @@ jobs:
           else
             echo "Changes detected."
           fi
-  # set-app-to-read-only:
-  #   runs-on: ubuntu-latest
-  #   steps:      
-  #     - name: Set nexus application to read-only
-  #       run: echo "setting app to read-only"
+  set-app-to-read-only:
+    needs: check_plan
+    runs-on: ubuntu-latest
+    if: env.proceed == 'true'
+    steps:      
+      - name: Set nexus application to read-only
+        run: echo "setting app to read-only"
         
   # check-rollback:
   #   runs-on: ubuntu-latest
