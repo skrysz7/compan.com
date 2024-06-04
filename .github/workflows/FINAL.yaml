@@ -320,7 +320,7 @@ jobs:
 
   app-health-check:
       runs-on: ubuntu-latest
-      #needs: ecs
+      needs: ecs
       steps:
       - name: Check if the website is accessible
         id: check_website
