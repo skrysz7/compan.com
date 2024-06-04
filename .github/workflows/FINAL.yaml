@@ -15,6 +15,8 @@ env:
 jobs:
   check_plan:
     runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check_plan.outputs.proceed }}
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v3
@@ -54,14 +56,14 @@ jobs:
 
           if [ "$add_changes" -eq 0 ] && [ "$change_changes" -eq 0 ] && [ "$destroy_changes" -eq 0 ]; then
             echo "No changes detected."
-            echo "proceed=true" >> $GITHUB_ENV
+            echo "::set-output name=proceed::true"
           else
             echo "Changes detected."
           fi
   set-app-to-read-only:
     needs: check_plan
     runs-on: ubuntu-latest
-    if: env.proceed == 'true'
+    if: needs.check_plan.outputs.proceed == 'true'
     steps:      
       - name: Set nexus application to read-only
         run: echo "setting app to read-only"
