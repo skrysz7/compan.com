@@ -317,24 +317,18 @@ jobs:
 
   app-health-check:
       runs-on: ubuntu-latest
-      outputs:
-       status: ${{ steps.app-health-check.outputs.status }}
       #needs: ecs
       steps:
       - name: Check if the website is accessible
         id: check_website
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.URL }})
-          if [ "$response" -eq 2000 ]; then
+          if [ "$response" -eq 200 ]; then
             echo "Website is accessible."
             echo "::set-output name=status::success"
-            # Set the LATEST_RUN_ID output for the next steps
-            echo "status=$status" >> $GITHUB_OUTPUT
           else
             echo "Website is not accessible. HTTP status code: $response"
             echo "::set-output name=status::failure"
-            # Set the LATEST_RUN_ID output for the next steps
-            echo "status=$status" >> $GITHUB_OUTPUT
             exit 1
           fi
 
