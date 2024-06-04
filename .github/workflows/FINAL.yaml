@@ -16,7 +16,7 @@ jobs:
   check_plan:
     runs-on: ubuntu-latest
     outputs:
-      proceed: ${{ steps.check_plan.outputs.proceed }}
+      proceed: ${{ steps.check-plan-changes.outputs.proceed }}
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v3
@@ -49,6 +49,7 @@ jobs:
           plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
 
       - name: Check Plan Changes
+        id: check-plan-changes
         run: |
           add_changes=$(echo "${{ steps.get-plan-output.outputs.add }}")
           change_changes=$(echo "${{ steps.get-plan-output.outputs.change }}")
