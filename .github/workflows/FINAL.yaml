@@ -298,6 +298,29 @@ jobs:
                --data "{}" \
                https://app.terraform.io/api/v2/runs/$LATEST_RUN_ID/actions/apply   
       
+          # Extracting apply request ID from the response
+          APPLY_REQUEST_ID=$(echo $apply_response | jq -r '.data.id')
+          echo "Apply Request ID: $APPLY_REQUEST_ID"
+
+          # Polling for the run status until it is completed
+          while true; do
+            status_response=$(curl --silent --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+                                    https://app.terraform.io/api/v2/runs/$LATEST_RUN_ID)
+            run_status=$(echo $status_response | jq -r '.data.attributes.status')
+            echo "Current Run Status: $run_status"
+            
+            if [[ "$run_status" == "applied" ]]; then
+              echo "Terraform apply completed successfully."
+              break
+            elif [[ "$run_status" == "errored" || "$run_status" == "canceled" ]]; then
+              echo "Terraform apply failed with status: $run_status"
+              exit 1
+            else
+              echo "Waiting for Terraform apply to complete..."
+              sleep 30  # Wait for 30 seconds before checking again
+            fi
+          done
+          
         timeout-minutes: 60
 
   ecs:
