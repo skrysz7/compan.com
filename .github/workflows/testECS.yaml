@@ -67,6 +67,7 @@ jobs:
         id: get-task-def-arn
         run: |
           TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
+          echo $TASK_DEF_ARN
           echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
 
       - name: Update ECS service with the task definition
