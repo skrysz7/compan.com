@@ -63,21 +63,16 @@ jobs:
         run: |
           aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
 
-      - name: Register the downloaded task definition
-        id: register-task-def
+      - name: Get the task definition ARN
+        id: get-task-def-arn
         run: |
-          aws ecs register-task-definition --cli-input-json file://hello_world.json
+          TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
+          echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
 
-      - name: Get the new task definition ARN
-        id: new-task-def-arn
-        run: |
-          NEW_TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition hello_world --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "::set-output name=new-task-def-arn::$NEW_TASK_DEF_ARN"
-
-      - name: Update ECS service with new task definition
+      - name: Update ECS service with the task definition
         id: update-service
         run: |
-          aws ecs update-service --cluster my-cluster --service hello-world-service --task-definition ${{ steps.new-task-def-arn.outputs.new-task-def-arn }}
+          aws ecs update-service --cluster my-cluster --service hello-world-service --task-definition ${{ steps.get-task-def-arn.outputs.task-def-arn }}
 
       - name: Wait for service stability
         id: wait-for-stability
