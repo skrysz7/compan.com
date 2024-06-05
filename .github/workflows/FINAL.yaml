@@ -144,7 +144,22 @@ jobs:
 
       - name: Store ECR Image Identifier in SSM
         run: |
-          aws ssm put-parameter --name "/ecr/image/tag" --value "$(aws ecr describe-images --repository-name ${{ secrets.AWS_REPOSITORY }} --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageTags[0]' --output text)" --type String --overwrite
+          # Define variables
+          CLUSTER_NAME=my-cluster
+          SERVICE_NAME=hello-world-service
+          PARAMETER_NAME=/ecr/image/name
+
+          # Get the running ECS task ARN
+          TASK_ARN=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
+          
+          # Get the task definition ARN from the task
+          TASK_DEFINITION_ARN=$(aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
+          
+          # Get the container image from the task definition
+          IMAGE_NAME=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
+          
+          # Put the image name into the SSM Parameter Store
+          aws ssm put-parameter --name $PARAMETER_NAME --value $IMAGE_NAME --type "String" --overwrite
   
   create_pr:
     runs-on: ubuntu-latest
