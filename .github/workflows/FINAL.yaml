@@ -7,9 +7,9 @@ on:
       - pre-release  # Trigger this workflow when something is pushed to pre-release
   
 env:
-  TF_CLOUD_ORGANIZATION: "compan"
+  TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
   TF_API_TOKEN: "${{ secrets.TFE_TOKEN }}"
-  TF_WORKSPACE: "compan-workspace"
+  TF_WORKSPACE: "${{ secrets.TF_WORKSPACE }}"
   CONFIG_DIRECTORY: "./"
   
 jobs:
@@ -19,7 +19,7 @@ jobs:
       proceed: ${{ steps.check-plan-changes.outputs.proceed }}
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: main
           
@@ -77,7 +77,7 @@ jobs:
       rollback: ${{ steps.check_rollback.outputs.rollback }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: develop
 
@@ -109,7 +109,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -171,7 +171,7 @@ jobs:
 
     steps:
       - name: Checkout pre-release branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: pre-release
 
@@ -348,7 +348,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -403,13 +403,13 @@ jobs:
       - name: Get the task definition ARN
         id: get-task-def-arn
         run: |
-          # TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
-          # echo $TASK_DEF_ARN
-          #echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
+          TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
+          echo $TASK_DEF_ARN
+          echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
           
-          latest_task_definition_arn=$(aws ecs list-task-definitions --family-prefix hello_world --sort DESC --query 'taskDefinitionArns[0]'  --output text)
-          echo $latest_task_definition_arn
-          echo "::set-output name=task-def-arn::$latest_task_definition_arn"
+          # latest_task_definition_arn=$(aws ecs list-task-definitions --family-prefix hello_world --sort DESC --query 'taskDefinitionArns[0]'  --output text)
+          # echo $latest_task_definition_arn
+          # echo "::set-output name=task-def-arn::$latest_task_definition_arn"
 
       - name: Update ECS service with the task definition
         id: update-service
