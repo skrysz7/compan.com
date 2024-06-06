@@ -91,7 +91,7 @@ jobs:
       - name: Check for Rollback keyword
         id: check_rollback
         run: |
-          if echo "$COMMIT_MESSAGE" | grep -q "Rollback"; then
+          if echo "$COMMIT_MESSAGE" | grep -q -i "Rollback"; then
             echo "Rollback keyword found in commit message."
             echo "::set-output name=rollback::true"
           else
