@@ -403,9 +403,13 @@ jobs:
       - name: Get the task definition ARN
         id: get-task-def-arn
         run: |
-          TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
-          echo $TASK_DEF_ARN
-          echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
+          # TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
+          # echo $TASK_DEF_ARN
+          #echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
+          
+          latest_task_definition_arn=$(aws ecs list-task-definitions --family-prefix hello_world --sort DESC --query 'taskDefinitionArns[0]'  --output text)
+          echo $latest_task_definition_arn
+          echo "::set-output name=task-def-arn::$latest_task_definition_arn"
 
       - name: Update ECS service with the task definition
         id: update-service
