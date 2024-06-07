@@ -32,16 +32,16 @@ jobs:
         with:
           mask-password: true
 
-      - name: Copy RPM file from S3 to /tmp
+      - name: Copy RPM file from S3 to repo dir
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_SHARED_BUCKET: ${{ secrets.S3_SHARED_BUCKET }}
           RPM_FILE: ${{ secrets.RPM_FILE }}
         run: |
-          aws s3 cp s3://$S3_SHARED_BUCKET/rpm/$RPM_FILE /tmp/$RPM_FILE --region eu-north-1
+          aws s3 cp s3://$S3_SHARED_BUCKET/rpm/$RPM_FILE ./$RPM_FILE --region eu-north-1
           
       - name: Verify RPM file
-        run: ls -l /tmp/${{ secrets.RPM_FILE }}
+        run: ls -l ./${{ secrets.RPM_FILE }}
         
       - name: Get repository version from ECR
         id: repo_version
@@ -74,7 +74,7 @@ jobs:
           else
             touch Dockerfile
             echo -e "FROM sonatype/nexus3:$IMAGE_VERSION\n" > Dockerfile
-            echo -e "COPY /tmp/$RPM_FILE /$RPM_FILE\n" >> Dockerfile
+            echo -e "COPY $RPM_FILE /$RPM_FILE\n" >> Dockerfile
             echo -e "USER root\n" >> Dockerfile
             # echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
             echo -e "USER nexus\n" >> Dockerfile
