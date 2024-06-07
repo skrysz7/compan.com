@@ -72,7 +72,7 @@ jobs:
             echo "Current ECR image version is equal to the remote version. Ending the build."
             exit 0
           else
-            cat Dockerfile
+            touch Dockerfile
             echo -e "FROM sonatype/nexus3:$IMAGE_VERSION\n" > Dockerfile
             echo -e "COPY /tmp/$RPM_FILE /$RPM_FILE\n" >> Dockerfile
             echo -e "USER root\n" >> Dockerfile
