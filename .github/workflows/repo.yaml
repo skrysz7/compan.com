@@ -72,11 +72,11 @@ jobs:
             echo "Current ECR image version is equal to the remote version. Ending the build."
             exit 0
           else
-            echo -e "FROM sonatype/nexus3:$IMAGE_VERSION\n" > Dockerfile
-            echo -e "COPY $RPM_FILE /$RPM_FILE\n" >> Dockerfile
-            echo -e "USER root\n" >> Dockerfile
-            echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
-            echo -e "USER nexus\n" >> Dockerfile
+            # echo -e "FROM sonatype/nexus3:$IMAGE_VERSION\n" > Dockerfile
+            # echo -e "COPY $RPM_FILE /$RPM_FILE\n" >> Dockerfile
+            # echo -e "USER root\n" >> Dockerfile
+            # echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
+            # echo -e "USER nexus\n" >> Dockerfile
             docker build . -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
           fi
