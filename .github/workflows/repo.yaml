@@ -75,7 +75,7 @@ jobs:
             echo -e "FROM sonatype/nexus3:$IMAGE_VERSION\n" > Dockerfile
             echo -e "COPY /tmp/$RPM_FILE /$RPM_FILE\n" >> Dockerfile
             echo -e "USER root\n" >> Dockerfile
-            echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
+            # echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
             echo -e "USER nexus\n" >> Dockerfile
             cat Dockerfile
             docker build . -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
