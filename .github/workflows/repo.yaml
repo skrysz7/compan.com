@@ -39,7 +39,10 @@ jobs:
           RPM_FILE: ${{ secrets.RPM_FILE }}
         run: |
           aws s3 cp s3://$S3_SHARED_BUCKET/rpm/$RPM_FILE /tmp/$RPM_FILE --region eu-north-1
-
+          
+      - name: Verify RPM file
+        run: ls -l /tmp/$RPM_FILE
+        
       - name: Get repository version from ECR
         id: repo_version
         env:
