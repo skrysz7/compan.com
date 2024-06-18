@@ -69,25 +69,20 @@ provider "null" {
 
 resource "null_resource" "os_info" {
   provisioner "local-exec" {
-    command = "uname -a"
-    # Capturing the output in a temporary file
-    # and using it in an output variable directly
-    # could be done through the `script_output` variable
+    command = "uname -a | jq -nR '{\"os_info\": input}' > os_info.json"
   }
-
+  
   triggers = {
     os_info = uuid() # Trigger to ensure the provisioner runs
   }
 }
 
-data "external" "os_info" {
-  program = ["sh", "-c", "uname -a"]
-
-  # Pass no additional input arguments
-  query = {}
+data "local_file" "os_info" {
+  filename = "${path.module}/os_info.json"
 }
 
 output "os_info" {
-  value = data.external.os_info.result.stdout
+  value = jsondecode(data.local_file.os_info.content).os_info
 }
+
 
