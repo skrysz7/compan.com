@@ -69,14 +69,28 @@ provider "null" {
 
 resource "null_resource" "os_info" {
   provisioner "local-exec" {
-    command = "uname -a > os_info.txt"
+    command = "uname -a"
+    # Capturing the output in a temporary file
+    # and using it in an output variable directly
+    # could be done through the `script_output` variable
   }
-  
-  provisioner "local-exec" {
-    command = "cat os_info.txt"
-    on_failure = continue
+
+  triggers = {
+    os_info = uuid() # Trigger to ensure the provisioner runs
   }
 }
+
+data "external" "os_info" {
+  program = ["sh", "-c", "uname -a"]
+
+  # Pass no additional input arguments
+  query = {}
+}
+
+output "os_info" {
+  value = data.external.os_info.result.stdout
+}
+
 
 output "os_info" {
   value = file("os_info.txt")
