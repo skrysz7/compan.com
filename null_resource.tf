@@ -91,7 +91,3 @@ output "os_info" {
   value = data.external.os_info.result.stdout
 }
 
-
-output "os_info" {
-  value = file("os_info.txt")
-}
