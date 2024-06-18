@@ -71,6 +71,20 @@ data "external" "os_info" {
   program = ["sh", "-c", "cat /etc/os-release | grep PRETTY_NAME | cut -d '\"' -f 2 | jq -nR '{\"os_info\": input}'"]
 }
 
+resource "null_resource" "docker" {
+  provisioner "local-exec" {
+    command = <<EOT
+#!/bin/bash
+set -e
+
+echo "jq not found, installing..."
+sudo apt-get update
+sudo apt-get install -y jq
+EOT
+  }
+}
+
+
 output "os_info" {
   value = data.external.os_info.result.os_info
 }
