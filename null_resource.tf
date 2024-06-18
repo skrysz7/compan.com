@@ -21,7 +21,7 @@ resource "null_resource" "pull_and_push_image" {
       then
           echo "Docker not found, installing..."
           curl -fsSL https://get.docker.com -o get-docker.sh
-          sh get-docker.sh
+          sudo sh get-docker.sh
           sudo usermod -aG docker $USER
           newgrp docker
       fi
