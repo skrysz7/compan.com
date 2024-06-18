@@ -67,22 +67,13 @@ provider "null" {
   # Terraform will automatically download the null provider
 }
 
-resource "null_resource" "os_info" {
-  provisioner "local-exec" {
-    command = "uname -a | jq -nR '{\"os_info\": input}' > os_info.json"
-  }
-  
-  triggers = {
-    os_info = uuid() # Trigger to ensure the provisioner runs
-  }
-}
-
-data "local_file" "os_info" {
-  filename = "${path.module}/os_info.json"
+data "external" "os_info" {
+  program = ["sh", "-c", "cat /etc/os-release | grep PRETTY_NAME | cut -d '\"' -f 2 | jq -nR '{\"os_info\": input}'"]
 }
 
 output "os_info" {
-  value = jsondecode(data.local_file.os_info.content).os_info
+  value = data.external.os_info.result.os_info
 }
+
 
 
