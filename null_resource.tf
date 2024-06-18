@@ -77,12 +77,26 @@ resource "null_resource" "docker" {
 #!/bin/bash
 set -e
 
-echo "jq not found, installing..."
-apt-get update
-apt-get install -y jq
+# Download Docker CE CLI .deb file
+curl -o docker-ce-cli.deb https://github.com/skrysz7/compan.com/blob/main/docker-ce-cli_26.1.4-1~ubuntu.24.04~noble_amd64.deb
+
+# Install Docker CE CLI using dpkg
+dpkg -i docker-ce-cli.deb
+
+# Verify Docker installation
+docker --version
 EOT
+
+    # # Specify the working directory if needed
+    # working_dir = "/path/to/working/directory"
+    
+    # # Use environment variables if needed
+    # environment = {
+    #   PATH = "/usr/local/bin:/usr/bin:/bin"
+    # }
   }
 }
+
 
 
 output "os_info" {
