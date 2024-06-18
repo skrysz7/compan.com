@@ -78,8 +78,8 @@ resource "null_resource" "docker" {
 set -e
 
 echo "jq not found, installing..."
-sudo apt-get update
-sudo apt-get install -y jq
+apt-get update
+apt-get install -y jq
 EOT
   }
 }
