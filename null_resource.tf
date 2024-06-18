@@ -4,7 +4,7 @@
 
 # provider "null" {
 #   version = "~> 3.0"
-# }
+# } 
 
 resource "aws_ecr_repository" "nexus_repo" {
   name = "nexus-repo"
