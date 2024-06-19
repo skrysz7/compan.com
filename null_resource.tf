@@ -1,14 +1,14 @@
 # provider "aws" {
 #   region = "eu-central-1"  # Change to your preferred region
 # } 
-resource "null_resource" "delete_rds_snap" {
-    provisioner "local-exec" {
-        command = <<-EOF
-            aws rds delete-db-snapshot --db-snapshot-identifier nexus-snapshot --region eu-central-1
-        EOF
-        interpreter = ["/bin/bash", "-c"]
-    }
-}
+# resource "null_resource" "delete_rds_snap" {
+#     provisioner "local-exec" {
+#         command = <<-EOF
+#             aws rds delete-db-snapshot --db-snapshot-identifier nexus-snapshot --region eu-central-1
+#         EOF
+#         interpreter = ["/bin/bash", "-c"]
+#     }
+# }
 # # provider "null" {
 # #   version = "~> 3.0"
 # # }
