@@ -1,6 +1,6 @@
 # provider "aws" {
 #   region = "eu-central-1"  # Change to your preferred region
-# }
+# } 
 resource "null_resource" "delete_rds_snap" {
     provisioner "local-exec" {
         command = <<-EOF
