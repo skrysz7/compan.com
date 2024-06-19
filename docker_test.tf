@@ -1,15 +1,15 @@
-# terraform {
-#   required_providers {
-#     aws = {
-#       source  = "hashicorp/aws"
-#       version = "~> 4.0"
-#     }
-#     dockerless = {
-#       source  = "nullstone-io/dockerless"
-#       version = "~> 0.2"
-#     }
-#   }
-# }
+terraform {
+  required_providers {
+    # aws = {
+    #   source  = "hashicorp/aws"
+    #   version = "~> 5.52"
+    # }
+    dockerless = {
+      source  = "nullstone-io/dockerless"
+      version = "~> 0.1.1"
+    }
+  }
+}
 
 # provider "aws" {
 #   region = "us-west-2" # Update to your preferred region
