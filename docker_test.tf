@@ -60,7 +60,7 @@ resource "aws_ebs_snapshot" "example_snapshot" {
 resource "null_resource" "take_ebs_snap" {
     provisioner "local-exec" {
         command = <<-EOF
-            aws ec2 create-snapshot --volume-id vol-07e74b7de6bcd8f5e --description "My EBS Snapshot on 2024-06-19" --tag Name=ebs-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')
+            aws ec2 create-snapshot --volume-id vol-07e74b7de6bcd8f5e --description "My EBS Snapshot on 2024-06-19" --tag Name=ebs-snapshot-$(date +'%Y-%m-%d-%H-%M-%S') --region us-east-1
         EOF
         interpreter = ["/bin/bash", "-c"]
     }
