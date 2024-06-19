@@ -66,3 +66,8 @@ variable "extra_sgs" {
   default     = []
   type        = list(string)
 }
+
+
+variable "version_ebs" {
+  default = "1"
+}
