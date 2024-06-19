@@ -49,13 +49,13 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   depends_on = [var.version]
 # }
 
-resource "aws_ebs_snapshot" "example_snapshot" {
-  volume_id = "vol-07e74b7de6bcd8f5e"
+# resource "aws_ebs_snapshot" "example_snapshot" {
+#   volume_id = "vol-07e74b7de6bcd8f5e"
 
-  tags = {
-    Name = "testsnapshot:${var.version_ebs}"
-  }
-}
+#   tags = {
+#     Name = "testsnapshot:${var.version_ebs}"
+#   }
+# }
 
 resource "null_resource" "take_ebs_snap" {
     provisioner "local-exec" {
