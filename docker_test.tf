@@ -40,3 +40,21 @@ resource "dockerless_remote_image" "alpine_latest" {
   source = "alpine:latest"
   target = "${aws_ecr_repository.this.repository_url}:latest"
 }
+
+#############
+# resource "aws_db_snapshot" "test" {
+#   db_instance_identifier = aws_db_instance.bar.identifier
+#   db_snapshot_identifier = "testsnapshot:${var.version}"
+
+#   depends_on = [var.version]
+# }
+
+resource "aws_ebs_snapshot" "example_snapshot" {
+  volume_id = "vol-07e74b7de6bcd8f5e"
+
+  tags = {
+    Name = "testsnapshot:${var.version_ebs}"
+  }
+}
+
+
