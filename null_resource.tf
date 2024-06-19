@@ -1,7 +1,14 @@
-# # provider "aws" {
-# #   region = "us-east-1"  # Change to your preferred region
-# # }
-
+# provider "aws" {
+#   region = "eu-central-1"  # Change to your preferred region
+# } 
+resource "null_resource" "delete_rds_snap" {
+    provisioner "local-exec" {
+        command = <<-EOF
+            aws rds delete-db-snapshot --db-snapshot-identifier nexus-snapshot --region eu-central-1
+        EOF
+        interpreter = ["/bin/bash", "-c"]
+    }
+}
 # # provider "null" {
 # #   version = "~> 3.0"
 # # }
@@ -63,29 +70,29 @@
 # output "repository_url" {
 #   value = aws_ecr_repository.nexus_repo.repository_url
 # }
-provider "null" {
-  # Terraform will automatically download the null provider
-}
+# provider "null" {
+#   # Terraform will automatically download the null provider
+# }
 
-data "external" "os_info" {
-  program = ["sh", "-c", "cat /etc/os-release | grep PRETTY_NAME | cut -d '\"' -f 2 | jq -nR '{\"os_info\": input}'"]
-}
+# data "external" "os_info" {
+#   program = ["sh", "-c", "cat /etc/os-release | grep PRETTY_NAME | cut -d '\"' -f 2 | jq -nR '{\"os_info\": input}'"]
+# }
 
-resource "null_resource" "docker" {
-  provisioner "local-exec" {
-    command = <<EOT
-#!/bin/bash
-set -e
+# resource "null_resource" "docker" {
+#   provisioner "local-exec" {
+#     command = <<EOT
+# #!/bin/bash
+# set -e
 
-# Download Docker CE CLI .deb file
-curl -o docker-ce-cli.deb https://github.com/skrysz7/compan.com/blob/main/docker-ce-cli_26.1.4-1~ubuntu.24.04~noble_amd64.deb
+# # Download Docker CE CLI .deb file
+# curl -o docker-ce-cli.deb https://github.com/skrysz7/compan.com/blob/main/docker-ce-cli_26.1.4-1~ubuntu.24.04~noble_amd64.deb
 
-# Install Docker CE CLI using dpkg
-dpkg -i docker-ce-cli.deb
+# # Install Docker CE CLI using dpkg
+# dpkg -i docker-ce-cli.deb
 
-# Verify Docker installation
-docker --version
-EOT
+# # Verify Docker installation
+# docker --version
+# EOT
 
     # # Specify the working directory if needed
     # working_dir = "/path/to/working/directory"
@@ -94,14 +101,14 @@ EOT
     # environment = {
     #   PATH = "/usr/local/bin:/usr/bin:/bin"
     # }
-  }
-}
+#   }
+# }
 
 
 
-output "os_info" {
-  value = data.external.os_info.result.os_info
-}
+# output "os_info" {
+#   value = data.external.os_info.result.os_info
+# }
 
 
 
