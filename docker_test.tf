@@ -49,18 +49,23 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   depends_on = [var.version]
 # }
 
-resource "aws_ebs_snapshot" "example_snapshot" {
-  volume_id = "vol-07e74b7de6bcd8f5e"
+# resource "aws_ebs_snapshot" "example_snapshot" {
+#   volume_id = "vol-07e74b7de6bcd8f5e"
 
-  tags = {
-    Name = "testsnapshot:${var.version_ebs}"
-  }
-}
+#   tags = {
+#     Name = "testsnapshot:${var.version_ebs}"
+#   }
+# }
 
 resource "null_resource" "take_ebs_snap" {
     provisioner "local-exec" {
         command = <<-EOF
-            aws ec2 create-snapshot --volume-id vol-07e74b7de6bcd8f5e --description "My EBS Snapshot on 2024-06-19" --tag Name=ebs-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')
+            # Create EBS Snapshot and get the Snapshot ID
+            SNAPSHOT_ID=$(aws ec2 create-snapshot --volume-id vol-07e74b7de6bcd8f5e --description "My EBS Snapshot on 2024-06-19" --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=ebs-snapshot-'"$(date +'%Y-%m-%d-%H-%M-%S')"'}]' --region us-east-1 --query 'SnapshotId' --output text)
+
+            # Store Snapshot ID in Parameter Store with a static parameter name
+            aws ssm put-parameter --name "/snapshots/ebs_snap" --value "$SNAPSHOT_ID" --type String --region us-east-1
+
         EOF
         interpreter = ["/bin/bash", "-c"]
     }
