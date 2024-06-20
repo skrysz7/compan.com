@@ -49,9 +49,13 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   depends_on = [var.version]
 # }
 
+variable "version_ebs" {
+  default = "no"
+}
+
 resource "aws_ebs_snapshot" "example_snapshot" {
   volume_id = "vol-07e74b7de6bcd8f5e"
-
+  count = var.version_ebs == "yes" ? 1 : 0
   tags = {
     Name = "testsnapshot:${var.version_ebs}"
   }
