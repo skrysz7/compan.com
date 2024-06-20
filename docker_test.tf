@@ -77,12 +77,3 @@ resource "aws_ebs_snapshot" "example_snapshot" {
 # provider "null" {
 #   version = "~> 3.0"
 # }
-
-
-container_image_version = "2"
-rds_snapshot = "yes"
-resource "aws_db_snapshot" "test" {
-  count = var.rds_snapshot == "yes" ? 1 : 0
-  db_instance_identifier = aws_db_instance.bar.identifier
-  db_snapshot_identifier = "testsnapshot:${var.rds_snapshot_version}"
-}
