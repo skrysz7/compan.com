@@ -15,31 +15,31 @@ terraform {
 #   region = "us-west-2" # Update to your preferred region
 # }
 
-resource "aws_ecr_repository" "this" {
-  name = "my-app"
-}
+# resource "aws_ecr_repository" "this" {
+#   name = "my-app"
+# }
 
-data "aws_caller_identity" "this" {}
+# data "aws_caller_identity" "this" {}
 
-data "aws_region" "current" {}
+# data "aws_region" "current" {}
 
-data "aws_ecr_authorization_token" "temporary" {
-  registry_id = data.aws_caller_identity.this.account_id
-}
+# data "aws_ecr_authorization_token" "temporary" {
+#   registry_id = data.aws_caller_identity.this.account_id
+# }
 
-provider "dockerless" {
-  registry_auth = {
-    "${data.aws_caller_identity.this.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com" = {
-      username = data.aws_ecr_authorization_token.temporary.user_name
-      password = data.aws_ecr_authorization_token.temporary.password
-    }
-  }
-}
+# provider "dockerless" {
+#   registry_auth = {
+#     "${data.aws_caller_identity.this.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com" = {
+#       username = data.aws_ecr_authorization_token.temporary.user_name
+#       password = data.aws_ecr_authorization_token.temporary.password
+#     }
+#   }
+# }
 
-resource "dockerless_remote_image" "alpine_latest" {
-  source = "alpine:latest"
-  target = "${aws_ecr_repository.this.repository_url}:${var.version_ebs}"
-}
+# resource "dockerless_remote_image" "alpine_latest" {
+#   source = "alpine:latest"
+#   target = "${aws_ecr_repository.this.repository_url}:latest"
+# }
 
 #############
 # resource "aws_db_snapshot" "test" {
@@ -49,15 +49,18 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   depends_on = [var.version]
 # }
 
-variable "version_ebs" {
+variable "ebs_snapshot" {
   default = "yes"
 }
 
 resource "aws_ebs_snapshot" "example_snapshot" {
   volume_id = "vol-07e74b7de6bcd8f5e"
-  count = var.version_ebs == "yes" ? 1 : 0
+  count = var.ebs_snapshot == "yes" ? 1 : 0
   tags = {
-    Name = "testsnapshot:${var.version_ebs}"
+    Name = "testsnapshot:${timestamp()}"
+  }
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
@@ -76,6 +79,4 @@ resource "aws_ebs_snapshot" "example_snapshot" {
 # }
 # provider "null" {
 #   version = "~> 3.0"
-# }
-
-
+# } 
