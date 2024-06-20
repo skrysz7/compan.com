@@ -69,7 +69,7 @@ variable "extra_sgs" {
 
 
 variable "version_ebs" {
-  default = "2"
+  default = "1"
 }
 
 variable "version_ebs_test" {
