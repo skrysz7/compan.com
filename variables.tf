@@ -73,5 +73,5 @@ variable "version_ebs" {
 }
 
 variable "version_ebs_test" {
-  default = "2"
+  default = "3"
 }
