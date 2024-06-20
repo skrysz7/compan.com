@@ -57,7 +57,7 @@ resource "aws_ebs_snapshot" "example_snapshot" {
   }
 }
 
-# resource "null_resource" "take_ebs_snap" {
+# resource "null_resource" "take_ebs_snap" { 
 #     provisioner "local-exec" {
 #         command = <<-EOF
 #             # Create EBS Snapshot and get the Snapshot ID
