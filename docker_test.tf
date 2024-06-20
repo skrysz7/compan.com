@@ -50,7 +50,7 @@ resource "dockerless_remote_image" "alpine_latest" {
 # }
 
 variable "version_ebs" {
-  default = "no"
+  default = "yes"
 }
 
 resource "aws_ebs_snapshot" "example_snapshot" {
@@ -61,7 +61,7 @@ resource "aws_ebs_snapshot" "example_snapshot" {
   }
 }
 
-# resource "null_resource" "take_ebs_snap" { 
+# resource "null_resource" "take_ebs_snap" {  
 #     provisioner "local-exec" {
 #         command = <<-EOF
 #             # Create EBS Snapshot and get the Snapshot ID
