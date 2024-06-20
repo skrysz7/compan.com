@@ -38,7 +38,7 @@ provider "dockerless" {
 
 resource "dockerless_remote_image" "alpine_latest" {
   source = "alpine:latest"
-  target = "${aws_ecr_repository.this.repository_url}:latest"
+  target = "${aws_ecr_repository.this.repository_url}:${var.version_ebs}"
 }
 
 #############
