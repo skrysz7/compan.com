@@ -38,7 +38,7 @@ provider "dockerless" {
 
 resource "dockerless_remote_image" "alpine_latest" {
   source = "alpine:latest"
-  target = "${aws_ecr_repository.this.repository_url}:latest"
+  target = "${aws_ecr_repository.this.repository_url}:${var.version_ebs}"
 }
 
 #############
@@ -49,15 +49,19 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   depends_on = [var.version]
 # }
 
+variable "version_ebs" {
+  default = "no"
+}
+
 resource "aws_ebs_snapshot" "example_snapshot" {
   volume_id = "vol-07e74b7de6bcd8f5e"
-
+  count = var.version_ebs == "yes" ? 1 : 0
   tags = {
     Name = "testsnapshot:${var.version_ebs}"
   }
 }
 
-# resource "null_resource" "take_ebs_snap" {
+# resource "null_resource" "take_ebs_snap" { 
 #     provisioner "local-exec" {
 #         command = <<-EOF
 #             # Create EBS Snapshot and get the Snapshot ID
