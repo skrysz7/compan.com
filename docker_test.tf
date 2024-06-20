@@ -50,7 +50,7 @@ resource "dockerless_remote_image" "alpine_latest" {
 # }
 
 variable "version_ebs" {
-  default = "no"
+  default = "yes"
 }
 
 resource "aws_ebs_snapshot" "example_snapshot" {
