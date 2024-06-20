@@ -57,7 +57,8 @@ resource "aws_ebs_snapshot" "example_snapshot" {
   volume_id = "vol-07e74b7de6bcd8f5e"
   count = var.ebs_snapshot == "yes" ? 1 : 0
   tags = {
-    Name = "testsnapshot:${timestamp()}"
+    # Name = "testsnapshot:${timestamp()}"
+    Name = "testsnapshot:1"
   }
   lifecycle {
     prevent_destroy = true
