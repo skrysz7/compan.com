@@ -146,12 +146,20 @@ jobs:
           echo "::set-output name=repo_version::$REPO_VERSION"
           echo $REPO_VERSION
 
-      - name: Get latest version from Docker Hub
+      # - name: Get latest version from Docker Hub
+      #   id: image_version
+      #   run: |
+      #     IMAGE_VERSION=$(curl -s https://hub.docker.com/v2/repositories/nginxdemos/hello/tags/?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" '{print $1}')
+      #     echo "::set-output name=image_version::$IMAGE_VERSION"
+      #     echo $IMAGE_VERSION
+      
+      - name: Get version from variables.tf
         id: image_version
         run: |
-          IMAGE_VERSION=$(curl -s https://hub.docker.com/v2/repositories/nginxdemos/hello/tags/?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" '{print $1}')
+          IMAGE_VERSION=$(grep 'default =' ecs2/variables.tf | awk -F'"' '{print $2}')
           echo "::set-output name=image_version::$IMAGE_VERSION"
           echo $IMAGE_VERSION
+          
       - name: Compare versions and build/push if necessary
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
