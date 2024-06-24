@@ -1,0 +1,35 @@
+name: ECS
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  ecs:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: "eu-central-1"
+
+      - name: Download task definition
+        id: task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+
+      - name: Deploy Amazon ECS task definition
+        id: deploy
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: hello_world.json
+          service: hello_world_service
+          cluster: my-cluster
+          wait-for-service-stability: true

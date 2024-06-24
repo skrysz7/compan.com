@@ -1,0 +1,81 @@
+name: ecs test
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  ecs:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: "eu-central-1"
+
+      - name: Remove current ECS tasks
+        id: task-remove
+        run: |
+          cluster="my-cluster"
+          service="hello-world-service"
+          
+          # List tasks and store task ARNs in an array
+          task_arns=$(aws ecs list-tasks --cluster $cluster --service-name $service --query "taskArns[]" --output text)
+          
+          if [ -z "$task_arns" ]; then
+            echo "No tasks found for service $service in cluster $cluster."
+          else
+            # Stop each task
+            for task_arn in $task_arns; do
+                echo "Stopping task $task_arn"
+                aws ecs stop-task --cluster $cluster --task $task_arn
+            done
+            
+            # Check periodically if all tasks are gone
+            echo "Checking if tasks are removed"
+            start_time=$(date +%s)
+            timeout=900  # 15 minutes timeout
+            while true; do
+                remaining_tasks=$(aws ecs list-tasks --cluster $cluster --service-name $service --query "taskArns[]" --output text)
+                if [ -z "$remaining_tasks" ]; then
+                    echo "All tasks have been removed."
+                    break
+                fi
+                current_time=$(date +%s)
+                elapsed_time=$((current_time - start_time))
+                if [ $elapsed_time -ge $timeout ]; then
+                    echo "Timeout waiting for tasks to be removed."
+                    break
+                fi
+                sleep 30
+                echo "Still waiting for tasks to be removed..."
+            done
+          fi
+
+      - name: Download task definition
+        id: task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+
+      - name: Get the task definition ARN
+        id: get-task-def-arn
+        run: |
+          TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
+          echo $TASK_DEF_ARN
+          echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
+
+      - name: Update ECS service with the task definition
+        id: update-service
+        run: |
+          aws ecs update-service --cluster my-cluster --service hello-world-service --task-definition ${{ steps.get-task-def-arn.outputs.task-def-arn }}
+
+      - name: Wait for service stability
+        id: wait-for-stability
+        run: |
+          aws ecs wait services-stable --cluster my-cluster --services hello-world-service
