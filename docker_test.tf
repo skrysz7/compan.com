@@ -1,19 +1,19 @@
-terraform {
-  required_providers {
-    # aws = {
-    #   source  = "hashicorp/aws"
-    #   version = "~> 5.52"
-    # }
-    dockerless = {
-      source  = "nullstone-io/dockerless"
-      version = "~> 0.1.1"
-    }
-  }
-}
-
-# provider "aws" {
-#   region = "us-west-2" # Update to your preferred region
+# terraform {
+#   required_providers {
+#     # aws = {
+#     #   source  = "hashicorp/aws"
+#     #   version = "~> 5.52"
+#     # }
+#     dockerless = {
+#       source  = "nullstone-io/dockerless"
+#       version = "~> 0.1.1"
+#     }
+#   }
 # }
+
+# # provider "aws" {
+# #   region = "us-west-2" # Update to your preferred region
+# # }
 
 # resource "aws_ecr_repository" "this" {
 #   name = "my-app"
@@ -41,29 +41,28 @@ terraform {
 #   target = "${aws_ecr_repository.this.repository_url}:latest"
 # }
 
-#############
-# resource "aws_db_snapshot" "test" {
-#   db_instance_identifier = aws_db_instance.bar.identifier
-#   db_snapshot_identifier = "testsnapshot:${var.version}"
+# #############
+# # resource "aws_db_snapshot" "test" {
+# #   db_instance_identifier = aws_db_instance.bar.identifier
+# #   db_snapshot_identifier = "testsnapshot:${var.version}"
 
-#   depends_on = [var.version]
+# #   depends_on = [var.version]
+# # }
+
+# variable "ebs_snapshot" {
+#   default = "yes"
 # }
 
-variable "ebs_snapshot" {
-  default = "yes"
-}
-
-resource "aws_ebs_snapshot" "example_snapshot" {
-  volume_id = "vol-07e74b7de6bcd8f5e"
-  count = var.ebs_snapshot == "yes" ? 1 : 0
-  tags = {
-    # Name = "testsnapshot:${timestamp()}"
-    Name = "testsnapshot:1"
-  }
-  lifecycle {
-    prevent_destroy = true
-  }
-}
+# resource "aws_ebs_snapshot" "example_snapshot" {
+#   volume_id = "vol-07e74b7de6bcd8f5e"
+#   count = var.ebs_snapshot == "yes" ? 1 : 0
+#   tags = {
+#     Name = "testsnapshot:${timestamp()}"
+#   }
+# #   lifecycle {
+# #     prevent_destroy = true
+# #   }
+# }
 
 # resource "null_resource" "take_ebs_snap" { 
 #     provisioner "local-exec" {
