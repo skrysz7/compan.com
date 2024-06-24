@@ -86,9 +86,9 @@ resource "aws_ecs_task_definition" "hello_world" {
       ]
     }
   ])
-  lifecycle {
-    ignore_changes = all
-  }
+  #lifecycle {
+  #  ignore_changes = all
+  #}
 }
 
 # ECS service
