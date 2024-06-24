@@ -102,7 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-if-rollback
     if: needs.check-if-rollback.outputs.rollback == 'false'
-
+    permissions:
+      id-token: write
+      contents: read
+      
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -146,7 +149,7 @@ jobs:
       - name: Get latest version from Docker Hub
         id: image_version
         run: |
-          IMAGE_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/sonatype/nexus3/tags?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" {'print $1'})
+          IMAGE_VERSION=$(curl -s https://hub.docker.com/r/nginxdemos/hello/tags?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" {'print $1'})
           echo "::set-output name=image_version::$IMAGE_VERSION"
           echo $IMAGE_VERSION
       - name: Compare versions and build/push if necessary
@@ -163,11 +166,11 @@ jobs:
             exit 0
           else
             touch Dockerfile
-            echo -e "FROM sonatype/nexus3:$IMAGE_VERSION\n" > Dockerfile
-            echo -e "COPY $RPM_FILE /$RPM_FILE\n" >> Dockerfile
-            echo -e "USER root\n" >> Dockerfile
-            # echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
-            echo -e "USER nexus\n" >> Dockerfile
+            echo -e "FROM nginxdemos/hello:$IMAGE_VERSION\n" > Dockerfile
+            # echo -e "COPY $RPM_FILE /$RPM_FILE\n" >> Dockerfile
+            # echo -e "USER root\n" >> Dockerfile
+            # # echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
+            # echo -e "USER nexus\n" >> Dockerfile
             docker build . -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
             docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
           fi
