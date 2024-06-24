@@ -149,7 +149,7 @@ jobs:
       - name: Get latest version from Docker Hub
         id: image_version
         run: |
-          IMAGE_VERSION=$(curl -s https://hub.docker.com/r/nginxdemos/hello/tags?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" {'print $1'})
+          IMAGE_VERSION=$(curl -s https://hub.docker.com/v2/repositories/nginxdemos/hello/tags/?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" '{print $1}')
           echo "::set-output name=image_version::$IMAGE_VERSION"
           echo $IMAGE_VERSION
       - name: Compare versions and build/push if necessary
@@ -161,7 +161,9 @@ jobs:
           RPM_FILE: ${{ secrets.RPM_FILE }}
           REPO_NAME: ${{ secrets.REPO_NAME }}
         run: |
-          if [ "$REPO_VERSION" == "$IMAGE_VERSION" ]; then
+          if [ -z "$REPO_VERSION" ]; then
+            echo "No existing image in ECR. Proceeding with build and push."
+          elif [ "$REPO_VERSION" == "$IMAGE_VERSION" ]; then
             echo "Current ECR image version is equal to the remote version. Ending the build."
             exit 0
           else
