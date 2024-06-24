@@ -79,7 +79,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: develop
+          ref: pre-release
 
       - name: Get commit message
         id: get_commit_message
