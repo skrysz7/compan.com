@@ -23,9 +23,6 @@ jobs:
         with:
           ref: main
           
-      # - name: Fetch main branch
-      #   run: git fetch origin main
-          
       - name: Upload Configuration
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.0
         id: plan-upload
