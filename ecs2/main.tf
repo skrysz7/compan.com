@@ -76,7 +76,7 @@ resource "aws_ecs_task_definition" "hello_world" {
   container_definitions = jsonencode([
     {
       name  = "hello_world"
-      image = "nginxdemos/hello"
+      image = "nginxdemos/hello:${var.container_image_version}"
       essential = true
       portMappings = [
         {
@@ -125,7 +125,7 @@ resource "aws_lb" "main" {
   enable_deletion_protection = false
 
   tags = {
-    Environment = "production"
+    Environment = "production1"
   }
 }
 
