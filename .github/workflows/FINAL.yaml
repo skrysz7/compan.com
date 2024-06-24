@@ -62,10 +62,11 @@ jobs:
             echo "Changes detected."
           fi
         shell: bash
+        
   set-app-to-read-only:
     needs: check-plan
     runs-on: ubuntu-latest
-    if: needs.check_plan.outputs.proceed == 'true'
+    if: needs.check-plan.outputs.proceed == 'true'
     steps:      
       - name: Set nexus application to read-only
         run: echo "setting app to read-only"
