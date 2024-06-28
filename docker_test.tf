@@ -48,9 +48,9 @@ resource "null_resource" "parameter_store" {
 #   }
 # }
 
-# # provider "aws" {
-# #   region = "us-west-2" # Update to your preferred region
-# # }
+provider "aws" {
+   region = "eu-central-1"
+}
 
 # resource "aws_ecr_repository" "this" {
 #   name = "my-app"
