@@ -1,4 +1,41 @@
-# terraform {
+locals {
+  # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS
+  snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
+  snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}"
+}
+
+resource "null_resource" "create_rds_snapshot" {
+  provisioner "local-exec" {
+    command = <<EOT
+      aws rds create-db-snapshot \
+      --db-instance-identifier "test" \
+      --db-snapshot-identifier ${local.snapshot_identifier}
+    EOT
+  }
+}
+
+resource "null_resource" "parameter_store" {
+  provisioner "local-exec" {
+    command = <<EOT
+      CLUSTER_NAME=my-cluster
+      SERVICE_NAME=hello-world-service
+      PARAMETER_NAME=/ecr/image/name
+      
+      TASK_ARN=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
+      TASK_DEFINITION_ARN=$(aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
+      IMAGE_NAME=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
+      aws ssm put-parameter --name $PARAMETER_NAME --value $IMAGE_NAME --type "String" --overwrite
+
+      aws ssm put-parameter --name "/rds/snapshot/name" --value ${local.snapshot_identifier} --type String --overwrite
+
+    EOT
+  }
+  depends_on = [
+    null_resource.create_rds_snapshot
+  ]
+}
+
+# terraform { 
 #   required_providers {
 #     # aws = {
 #     #   source  = "hashicorp/aws"
@@ -68,7 +105,7 @@
 #     provisioner "local-exec" {
 #         command = <<-EOF
 #             # Create EBS Snapshot and get the Snapshot ID
-#             SNAPSHOT_ID=$(aws ec2 create-snapshot --volume-id vol-07e74b7de6bcd8f5e --description "My EBS Snapshot on 2024-06-19" --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=ebs-snapshot-'"$(date +'%Y-%m-%d-%H-%M-%S')"'}]' --region us-east-1 --query 'SnapshotId' --output text)
+#             SNAPSHOT_ID=$(aws ec2 create-snapshot --volume-id vol-07e74b7de6bcd8f5e --tag-specifications 'ResourceType=snapshot,Tags=[{Key=Name,Value=ebs-snapshot-'"$(date +'%Y-%m-%d-%H-%M-%S')"'}]' --region us-east-1 --query 'SnapshotId' --output text)
 
 #             # Store Snapshot ID in Parameter Store with a static parameter name
 #             aws ssm put-parameter --name "/snapshots/ebs_snap" --value "$SNAPSHOT_ID" --type String --region us-east-1
