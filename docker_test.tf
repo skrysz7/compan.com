@@ -21,12 +21,10 @@ resource "null_resource" "parameter_store" {
       SERVICE_NAME=hello-world-service
       PARAMETER_NAME=/ecr/image/name
       
-      TASK_ARN=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
-      TASK_DEFINITION_ARN=$(aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
-      IMAGE_NAME=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
-      aws ssm put-parameter --name $PARAMETER_NAME --value $IMAGE_NAME --type "String" --overwrite
-
-      aws ssm put-parameter --name "/rds/snapshot/name" --value ${local.snapshot_identifier} --type String --overwrite
+      TASK_ARN=$(aws ecs list-tasks --region eu-central-1 --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
+      TASK_DEFINITION_ARN=$(aws ecs describe-tasks --region eu-central-1 --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
+      IMAGE_NAME=$(aws ecs describe-task-definition --region eu-central-1 --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
+      aws ssm put-parameter --region eu-central-1 --name $PARAMETER_NAME --value $IMAGE_NAME --type "String" --overwrite
 
     EOT
   }
@@ -48,9 +46,9 @@ resource "null_resource" "parameter_store" {
 #   }
 # }
 
-provider "aws" {
-   region = "eu-central-1"
-}
+# provider "aws" {
+#    region = "eu-central-1"
+# }
 
 # resource "aws_ecr_repository" "this" {
 #   name = "my-app"
