@@ -1,5 +1,5 @@
 locals {
-  # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS
+  # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}"
 }
@@ -7,7 +7,7 @@ locals {
 resource "null_resource" "create_rds_snapshot" {
   provisioner "local-exec" {
     command = <<EOT
-      aws rds create-db-snapshot \
+      aws rds create-db-snapshot --region eu-central-1 \
       --db-instance-identifier "test" \
       --db-snapshot-identifier ${local.snapshot_identifier}
     EOT
