@@ -1,0 +1,540 @@
+name: Final
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - pre-release  # Trigger this workflow when something is pushed to pre-release
+  
+env:
+  TF_CLOUD_ORGANIZATION: "${{ secrets.TF_CLOUD_ORGANIZATION }}"
+  TF_API_TOKEN: "${{ secrets.TFE_TOKEN }}"
+  TF_WORKSPACE: "${{ secrets.TF_WORKSPACE }}"
+  CONFIG_DIRECTORY: "./"
+  
+jobs:
+  check-plan:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check-plan-changes.outputs.proceed }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.0
+        id: plan-upload
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+          speculative: true
+
+      - name: Create Plan Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.0
+        id: plan-run
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
+          plan_only: true
+
+      - name: Get Plan Output
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.3.0
+        id: get-plan-output
+        with:
+          plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+
+      - name: Check Plan Changes
+        id: check-plan-changes
+        run: |
+          add_changes=$(echo "${{ steps.get-plan-output.outputs.add }}")
+          change_changes=$(echo "${{ steps.get-plan-output.outputs.change }}")
+          destroy_changes=$(echo "${{ steps.get-plan-output.outputs.destroy }}")
+
+          if [ "$add_changes" -eq 0 ] && [ "$change_changes" -eq 0 ] && [ "$destroy_changes" -eq 0 ]; then
+            echo "No changes detected."
+            echo "::set-output name=proceed::true"
+          else
+            echo "Changes detected."
+          fi
+        shell: bash
+        
+  set-app-to-read-only:
+    needs: check-plan
+    runs-on: ubuntu-latest
+    if: needs.check-plan.outputs.proceed == 'true'
+    steps:      
+      - name: Set nexus application to read-only
+        run: echo "setting app to read-only"
+        
+  check-if-rollback:
+    runs-on: ubuntu-latest
+    needs: set-app-to-read-only
+    outputs:
+      rollback: ${{ steps.check-rollback.outputs.rollback }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: pre-release
+
+      - name: Get commit message
+        id: get_commit_message
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Check for Rollback keyword
+        id: check-rollback
+        run: |
+          if echo "$COMMIT_MESSAGE" | grep -q -i "rollback"; then
+            echo "Rollback keyword found in commit message."
+            echo "::set-output name=rollback::true"
+          else
+            echo "No Rollback keyword found in commit message."
+            echo "::set-output name=rollback::false"
+          fi
+        shell: bash
+        
+  build-image:
+    runs-on: ubuntu-latest
+    needs: check-if-rollback
+    if: needs.check-if-rollback.outputs.rollback == 'false'
+    permissions:
+      id-token: write
+      contents: read
+      
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: true
+
+      - name: Copy RPM file from S3 to repo dir
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_SHARED_BUCKET: ${{ secrets.S3_SHARED_BUCKET }}
+          RPM_FILE: ${{ secrets.RPM_FILE }}
+        run: |
+          aws s3 cp s3://$S3_SHARED_BUCKET/rpm/$RPM_FILE ./$RPM_FILE --region eu-north-1
+          
+      - name: Verify RPM file
+        run: ls -l ./${{ secrets.RPM_FILE }}
+        
+      - name: Get repository version from ECR
+        id: repo_version
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: |
+          REPO_VERSION=$(aws ecr describe-images --repository-name nexus --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)
+          echo "::set-output name=repo_version::$REPO_VERSION"
+          echo $REPO_VERSION
+
+      # - name: Get latest version from Docker Hub
+      #   id: image_version
+      #   run: |
+      #     IMAGE_VERSION=$(curl -s https://hub.docker.com/v2/repositories/nginxdemos/hello/tags/?page_size=10 | jq -r '[.results[] | select(.name != "latest")] | sort_by(.last_updated) | last.name' | awk -F"-" '{print $1}')
+      #     echo "::set-output name=image_version::$IMAGE_VERSION"
+      #     echo $IMAGE_VERSION
+      
+      - name: Get version from variables.tf
+        id: image_version
+        run: |
+          IMAGE_VERSION=$(grep 'default =' ecs2/variables.tf | awk -F'"' '{print $2}')
+          echo "::set-output name=image_version::$IMAGE_VERSION"
+          echo $IMAGE_VERSION
+          
+      - name: Compare versions and build/push if necessary
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          REPO_VERSION: ${{ steps.repo_version.outputs.repo_version }}
+          IMAGE_VERSION: ${{ steps.image_version.outputs.image_version }}
+          RPM_FILE: ${{ secrets.RPM_FILE }}
+          REPO_NAME: ${{ secrets.REPO_NAME }}
+        run: |
+          if [ -z "$REPO_VERSION" ]; then
+            echo "No existing image in ECR. Proceeding with build and push."
+          elif [ "$REPO_VERSION" == "$IMAGE_VERSION" ]; then
+            echo "Current ECR image version is equal to the remote version. Ending the build."
+            exit 0
+          else
+            touch Dockerfile
+            echo -e "FROM nginxdemos/hello:$IMAGE_VERSION\n" > Dockerfile
+            # echo -e "COPY $RPM_FILE /$RPM_FILE\n" >> Dockerfile
+            # echo -e "USER root\n" >> Dockerfile
+            # # echo -e "RUN rpm -ivh /$RPM_FILE\n" >> Dockerfile
+            # echo -e "USER nexus\n" >> Dockerfile
+            docker build . -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_VERSION
+          fi
+          
+  take-rds-snapshot:
+    runs-on: ubuntu-latest
+    needs: check-if-rollback
+    if: needs.check-if-rollback.outputs.rollback == 'false'
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set Snapshot Identifier
+        id: set_snapshot_identifier
+        run: |
+          snapshot_identifier="${{ secrets.SNAPSHOT_ID }}-snapshot-$(date +'%Y-%m-%d-%H-%M-%S')"
+          echo "::set-output name=snapshot_identifier::$snapshot_identifier"
+
+      - name: Take RDS DB Snapshot
+        run: |
+          aws rds create-db-snapshot --db-instance-identifier ${{ secrets.SNAPSHOT_ID }} --db-snapshot-identifier ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }}
+
+      - name: Wait for Snapshot to Complete
+        run: |
+          while true; do
+            status=$(aws rds describe-db-snapshots --db-snapshot-identifier ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --query 'DBSnapshots[0].Status' --output text)
+            if [ "$status" = "available" ]; then
+              echo "Snapshot completed successfully."
+              break
+            else
+              echo "Snapshot is still in progress. Waiting..."
+              sleep 30  # Adjust the sleep time as needed
+            fi
+          done
+
+      - name: Store Snapshot Identifier in SSM
+        run: |
+          aws ssm put-parameter --name "/rds/snapshot/name" --value ${{ steps.set_snapshot_identifier.outputs.snapshot_identifier }} --type String --overwrite    
+
+      - name: Store ECR Image Identifier in SSM
+        run: |
+          # Define variables
+          CLUSTER_NAME=my-cluster
+          SERVICE_NAME=hello-world-service
+          PARAMETER_NAME=/ecr/image/name
+
+          # Get the running ECS task ARN
+          TASK_ARN=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
+          
+          # Get the task definition ARN from the task
+          TASK_DEFINITION_ARN=$(aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
+          
+          # Get the container image from the task definition
+          IMAGE_NAME=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
+          
+          # Put the image name into the SSM Parameter Store
+          aws ssm put-parameter --name $PARAMETER_NAME --value $IMAGE_NAME --type "String" --overwrite
+  
+  create-pull-request:
+    runs-on: ubuntu-latest
+    needs: check-if-rollback
+    outputs:
+      LATEST_RUN_ID: ${{ steps.get-run-id.outputs.LATEST_RUN_ID }}
+
+    steps:
+      - name: Checkout pre-release branch
+        uses: actions/checkout@v4
+        with:
+          ref: pre-release
+
+      - name: Fetch main branch
+        run: git fetch origin main
+
+      - name: Check for differences
+        run: |
+          if git diff --exit-code origin/main; then
+            echo "No changes detected"
+            exit 0
+          else
+            echo "Changes detected"
+          fi
+
+      - name: Create pull request
+        run: gh pr create -B main -H pre-release --title 'Merge pre-release into main' --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Wait 20 seconds
+        run: sleep 20
+
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.0
+        id: plan-upload
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+          speculative: true
+
+      - name: Create Plan Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.0
+        id: plan-run
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
+          plan_only: true
+
+      - name: Get Plan Output
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.3.0
+        id: plan-output
+        with:
+          plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+
+      - name: Display Plan Output
+        run: echo "${{ steps.plan-output.outputs.plan }}"
+
+      - name: Merge pull request
+        run: gh pr merge --merge --auto --subject 'Merge pre-release into main' --body 'Auto-merged by GitHub Action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Wait 20 seconds
+        run: sleep 20
+
+      - name: Get latest Terraform run ID
+        id: get-run-id
+        run: |
+          # Set your Terraform Cloud organization and workspace
+          ORG_NAME="compan"
+          WORKSPACE_NAME="compan-workspace"
+          
+          # Fetch the workspace ID
+          WORKSPACE_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/organizations/${ORG_NAME}/workspaces/${WORKSPACE_NAME} | jq -r '.data.id')
+          
+          echo "Workspace ID: $WORKSPACE_ID"
+          
+          if [ "$WORKSPACE_ID" == "null" ]; then
+            echo "Failed to fetch Workspace ID"
+            exit 1
+          fi
+          
+          # Fetch the latest run ID for the workspace
+          LATEST_RUN_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+            https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/runs | jq -r '.data[0].id')
+          
+          echo "Latest Run ID: $LATEST_RUN_ID"
+          echo "LATEST_RUN_ID=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
+          
+          if [ "$LATEST_RUN_ID" == "null" ]; then
+            echo "Failed to fetch Latest Run ID"
+            exit 1
+          fi
+      
+          # Initialize plan status
+          PLAN_STATUS=""
+      
+          # Loop to wait until the plan status is "planned"
+          while [ "$PLAN_STATUS" != "planned" ]; do
+            # Fetch the plan status for the latest run
+            PLAN_STATUS=$(curl -s \
+              --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+              https://app.terraform.io/api/v2/runs/${LATEST_RUN_ID} | jq -r '.data.attributes.status')
+          
+            echo "Plan Status: $PLAN_STATUS"
+          
+            if [ "$PLAN_STATUS" == "null" ]; then
+              echo "Failed to fetch Plan Status"
+              exit 1
+            fi
+
+            if [ "$PLAN_STATUS" == "planned_and_finished" ]; then
+              echo "No changes to apply"
+              exit 1
+            fi
+            
+            if [ "$PLAN_STATUS" != "planned" ]; then
+              echo "Plan not yet finished. Waiting for 30 seconds..."
+              sleep 30
+            fi
+          done
+          
+          # Set the output for the next steps
+          echo "::set-output name=plan_status::$PLAN_STATUS"
+          # Set the LATEST_RUN_ID output for the next steps
+          echo "LATEST_RUN_ID=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Use latest plan status
+        run: echo "The latest plan status is ${{ steps.get-run-id.outputs.plan_status }}"
+       
+  approval:
+    needs: create-pull-request
+    runs-on: ubuntu-latest
+    environment: apply
+    steps:
+      - name: Apply Terraform changes
+        run: |
+          set -e  # Exit immediately if a command exits with a non-zero status
+
+          # Assuming you have the latest run ID stored in a variable
+          LATEST_RUN_ID="${{ needs.create-pull-request.outputs.LATEST_RUN_ID }}"
+          echo "Latest Run ID: $LATEST_RUN_ID"
+      
+          # Apply the Terraform changes using the Terraform Cloud API
+          apply_response=$(curl --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+                                --header "Content-Type: application/vnd.api+json" \
+                                --request POST \
+                                --data '{}' \
+                                https://app.terraform.io/api/v2/runs/$LATEST_RUN_ID/actions/apply)
+          
+          echo "Apply Response: $apply_response"
+          
+          # Extracting apply request ID from the response
+          APPLY_REQUEST_ID=$(echo $apply_response | jq -r '.data.id')
+          echo "Apply Request ID: $APPLY_REQUEST_ID"
+
+          if [[ -z "$APPLY_REQUEST_ID" ]]; then
+            echo "Error: APPLY_REQUEST_ID is empty"
+            exit 1
+          fi
+
+          # Polling for the run status until it is completed
+          while true; do
+            status_response=$(curl --silent --header "Authorization: Bearer ${{ secrets.TFE_TOKEN }}" \
+                                    https://app.terraform.io/api/v2/runs/$LATEST_RUN_ID)
+            run_status=$(echo $status_response | jq -r '.data.attributes.status')
+            echo "Current Run Status: $run_status"
+            
+            if [[ "$run_status" == "applied" ]]; then
+              echo "Terraform apply completed successfully."
+              break
+            elif [[ "$run_status" == "errored" || "$run_status" == "canceled" ]]; then
+              echo "Terraform apply failed with status: $run_status"
+              exit 1
+            else
+              echo "Waiting for Terraform apply to complete..."
+              sleep 30  # Wait for 30 seconds before checking again
+            fi
+          done
+          
+        timeout-minutes: 60
+
+  ecs:
+    runs-on: ubuntu-latest
+    needs: approval
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Remove current ECS tasks
+        id: task-remove
+        run: |
+          cluster="my-cluster"
+          service="hello-world-service"
+          
+          # List tasks and store task ARNs in an array
+          task_arns=$(aws ecs list-tasks --cluster $cluster --service-name $service --query "taskArns[]" --output text)
+          
+          if [ -z "$task_arns" ]; then
+            echo "No tasks found for service $service in cluster $cluster."
+          else
+            # Stop each task
+            for task_arn in $task_arns; do
+                echo "Stopping task $task_arn"
+                aws ecs stop-task --cluster $cluster --task $task_arn
+            done
+            
+            # Check periodically if all tasks are gone
+            echo "Checking if tasks are removed"
+            start_time=$(date +%s)
+            timeout=900  # 15 minutes timeout
+            while true; do
+                remaining_tasks=$(aws ecs list-tasks --cluster $cluster --service-name $service --query "taskArns[]" --output text)
+                if [ -z "$remaining_tasks" ]; then
+                    echo "All tasks have been removed."
+                    break
+                fi
+                current_time=$(date +%s)
+                elapsed_time=$((current_time - start_time))
+                if [ $elapsed_time -ge $timeout ]; then
+                    echo "Timeout waiting for tasks to be removed."
+                    break
+                fi
+                sleep 30
+                echo "Still waiting for tasks to be removed..."
+            done
+          fi
+
+      - name: Download task definition
+        id: task-def
+        run: |
+          aws ecs describe-task-definition --task-definition hello_world --query taskDefinition > hello_world.json
+
+      - name: Get the task definition ARN
+        id: get-task-def-arn
+        run: |
+          TASK_DEF_ARN=$(jq -r '.taskDefinitionArn' hello_world.json)
+          echo $TASK_DEF_ARN
+          echo "::set-output name=task-def-arn::$TASK_DEF_ARN"
+          
+          # latest_task_definition_arn=$(aws ecs list-task-definitions --family-prefix hello_world --sort DESC --query 'taskDefinitionArns[0]'  --output text)
+          # echo $latest_task_definition_arn
+          # echo "::set-output name=task-def-arn::$latest_task_definition_arn"
+
+      - name: Update ECS service with the task definition
+        id: update-service
+        run: |
+          aws ecs update-service --cluster my-cluster --service hello-world-service --task-definition ${{ steps.get-task-def-arn.outputs.task-def-arn }}
+
+      - name: Wait for service stability
+        id: wait-for-stability
+        run: |
+          aws ecs wait services-stable --cluster my-cluster --services hello-world-service
+
+  app-health-check:
+      runs-on: ubuntu-latest
+      needs: ecs
+      steps:
+      - name: Check if the website is accessible
+        id: check_website
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.URL }})
+          if [ "$response" -eq 200 ]; then
+            echo "Website is accessible."
+            echo "::set-output name=status::success"
+          else
+            echo "Website is not accessible. HTTP status code: $response"
+            echo "::set-output name=status::failure"
+            exit 1
+          fi
+
+  set-app-to-read-write:
+      runs-on: ubuntu-latest
+      needs: app-health-check
+      #if: needs.app-health-check.outputs.status == 'success'
+      steps:      
+        - name: Set nexus application to read-write
+          run: echo "setting app to read-write"

@@ -1,0 +1,42 @@
+name: Check Rollback in Commit
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  push:
+    branches:
+      - test  # Trigger this workflow when something is pushed to pre-release
+
+jobs:
+  check-rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get commit message
+        id: get_commit_message
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Check for Rollback keyword
+        id: check_rollback
+        run: |
+          if echo "$COMMIT_MESSAGE" | grep -q "Rollback"; then
+            echo "Rollback keyword found in commit message."
+            echo "continue=true" >> $GITHUB_ENV
+          else
+            echo "No Rollback keyword found in commit message."
+            echo "continue=false" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Stop if no Rollback keyword
+        if: env.continue == 'false'
+        run: echo "Stopping the process because the commit message does not contain the word 'Rollback'."
+
+      - name: Continue if Rollback keyword is found
+        if: env.continue == 'true'
+        run: echo "Continuing with further steps because the commit message contains the word 'Rollback'."
+        # Add further steps here

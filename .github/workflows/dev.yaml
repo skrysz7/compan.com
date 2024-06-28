@@ -1,0 +1,15 @@
+name: First Workflow
+
+on:
+  push:
+    branches:
+      - pre-release  # Trigger this workflow when something is pushed to pre-release
+
+jobs:
+  trigger_second_workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "First Workflow running!!!"
+      - name: Checkout
+        uses: actions/checkout@v3

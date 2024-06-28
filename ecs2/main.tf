@@ -86,9 +86,9 @@ resource "aws_ecs_task_definition" "hello_world" {
       ]
     }
   ])
-  lifecycle {
-    ignore_changes = all
-  }
+  #lifecycle {
+  #  ignore_changes = all
+  #}
 }
 
 # ECS service
@@ -110,9 +110,12 @@ resource "aws_ecs_service" "main" {
     security_groups = [aws_security_group.web_sg.id]
     assign_public_ip = true
   }
-  # lifecycle {
-  #   ignore_changes = all
-  # }
+  lifecycle {
+    ignore_changes = [
+      #desired_count,   #Can be changed by autoscaling
+      task_definition #Can be changed by deployments (CodeDeploy)
+    ]
+  }
 }
 
 # ALB
@@ -124,9 +127,6 @@ resource "aws_lb" "main" {
 
   enable_deletion_protection = false
 
-  tags = {
-    Environment = "production1"
-  }
 }
 
 # ALB Listener
