@@ -35,7 +35,7 @@ resource "null_resource" "parameter_store" {
   ]
 }
 
-# terraform {
+# terraform { 
 #   required_providers {
 #     # aws = {
 #     #   source  = "hashicorp/aws"
