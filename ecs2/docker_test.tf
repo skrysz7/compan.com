@@ -1,14 +1,14 @@
 resource "aws_ssm_parameter" "rds_db_snapshot" {
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
-  value  = "CHANGE-ME"
+  value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
   #key_id = aws_kms_key.key.arn
 
-  lifecycle {
-    ignore_changes = [
-      value
-    ]
-  }
+  # lifecycle {
+  #   ignore_changes = [
+  #     value
+  #   ]
+  # }
 }
 
 # Paramter store to store latest working image version in case of rollback
@@ -32,56 +32,61 @@ locals {
   snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}"
 }
 
-resource "null_resource" "create_rds_snapshot" {
-  triggers = {
-    container_image_version = var.container_image_version
-  }
-  provisioner "local-exec" {
-    command = <<EOT
-      aws rds create-db-snapshot --region eu-central-1 \
-      --db-instance-identifier "test" \
-      --db-snapshot-identifier ${local.snapshot_identifier}
-    EOT
-  }
+resource "aws_db_snapshot" "create_rds_snapshot" {
+  db_instance_identifier = "test"
+  db_snapshot_identifier = local.snapshot_identifier
 }
 
-resource "null_resource" "parameter_store_image" {
-  triggers = {
-    container_image_version = var.container_image_version
-  }
-  provisioner "local-exec" {
-    command = <<EOT
-      CLUSTER_NAME=${aws_ecs_cluster.main.name}
-      SERVICE_NAME=${aws_ecs_service.main.name}
-      PARAMETER_NAME=${aws_ssm_parameter.nexus_image_version.name}
-      REGION="eu-central-1"
+# resource "null_resource" "create_rds_snapshot" {
+#   triggers = {
+#     container_image_version = var.container_image_version
+#   }
+#   provisioner "local-exec" {
+#     command = <<EOT
+#       aws rds create-db-snapshot --region eu-central-1 \
+#       --db-instance-identifier "test" \
+#       --db-snapshot-identifier ${local.snapshot_identifier}
+#     EOT
+#   }
+# }
+
+# resource "null_resource" "parameter_store_image" {
+#   triggers = {
+#     container_image_version = var.container_image_version
+#   }
+#   provisioner "local-exec" {
+#     command = <<EOT
+#       CLUSTER_NAME=${aws_ecs_cluster.main.name}
+#       SERVICE_NAME=${aws_ecs_service.main.name}
+#       PARAMETER_NAME=${aws_ssm_parameter.nexus_image_version.name}
+#       REGION="eu-central-1"
       
-      TASK_ARN=$(aws ecs list-tasks --region $REGION --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
-      TASK_DEFINITION_ARN=$(aws ecs describe-tasks --region $REGION --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
-      IMAGE_NAME=$(aws ecs describe-task-definition --region $REGION --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
-      aws ssm put-parameter --region $REGION --name $PARAMETER_NAME --value $IMAGE_NAME --type "SecureString" --overwrite
-    EOT
-  }
-  depends_on = [
-    null_resource.create_rds_snapshot
-  ]
-}
+#       TASK_ARN=$(aws ecs list-tasks --region $REGION --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
+#       TASK_DEFINITION_ARN=$(aws ecs describe-tasks --region $REGION --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
+#       IMAGE_NAME=$(aws ecs describe-task-definition --region $REGION --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
+#       aws ssm put-parameter --region $REGION --name $PARAMETER_NAME --value $IMAGE_NAME --type "SecureString" --overwrite
+#     EOT
+#   }
+#   depends_on = [
+#     null_resource.create_rds_snapshot
+#   ]
+# }
 
 
-resource "null_resource" "parameter_store_rds" {
-  triggers = {
-    container_image_version = var.container_image_version
-  }
-  provisioner "local-exec" {
-    command = <<EOT
-      REGION="eu-central-1"
-      aws ssm put-parameter --region $REGION --name ${aws_ssm_parameter.rds_db_snapshot.name} --value ${local.snapshot_identifier} --type SecureString --overwrite
-    EOT
-  }
-  depends_on = [
-    null_resource.create_rds_snapshot
-  ]
-}
+# resource "null_resource" "parameter_store_rds" {
+#   triggers = {
+#     container_image_version = var.container_image_version
+#   }
+#   provisioner "local-exec" {
+#     command = <<EOT
+#       REGION="eu-central-1"
+#       aws ssm put-parameter --region $REGION --name ${aws_ssm_parameter.rds_db_snapshot.name} --value ${local.snapshot_identifier} --type SecureString --overwrite
+#     EOT
+#   }
+#   depends_on = [
+#     null_resource.create_rds_snapshot
+#   ]
+# }
 
 # resource "dockerless_remote_image" "alpine_latest" {
 #   source = "alpine:latest"
