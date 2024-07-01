@@ -7,6 +7,9 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
   value  = aws_db_snapshot.create_rds_snapshot[0].db_snapshot_identifier
+  lifecycle {
+    prevent_destroy = true
+  }
 
   #value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
   #key_id = aws_kms_key.key.arn
@@ -41,6 +44,9 @@ resource "aws_db_snapshot" "create_rds_snapshot" {
   count                  = var.rollback ? 0 : 1
   db_instance_identifier = "test"
   db_snapshot_identifier = local.snapshot_identifier
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # resource "dockerless_remote_image" "alpine_latest" {
