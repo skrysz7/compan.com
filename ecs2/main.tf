@@ -112,6 +112,7 @@ resource "aws_ecs_service" "main" {
     security_groups = [aws_security_group.web_sg.id]
     assign_public_ip = true
   }
+  depends_on = [aws_ssm_parameter.nexus_image_version]
   # lifecycle {
   #   ignore_changes = [
   #     #desired_count,   #Can be changed by autoscaling

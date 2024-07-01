@@ -38,8 +38,7 @@ locals {
 resource "aws_db_snapshot" "create_rds_snapshot" {
   count                  = var.rollback == "no" ? 1 : 0
   db_instance_identifier = "test"
-  #db_snapshot_identifier = local.snapshot_identifier
-  db_snapshot_identifier = "test-1"
+  db_snapshot_identifier = local.snapshot_identifier
 }
 
 # resource "dockerless_remote_image" "alpine_latest" {
