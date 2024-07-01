@@ -15,16 +15,16 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
 resource "aws_ssm_parameter" "nexus_image_version" {
   name   = "/nexus/image/version"
   type   = "SecureString"
-  value  = "CHANGE-ME"
+  value  = var.container_image_version
+  #value  = "CHANGE-ME"
   #key_id = aws_kms_key.key.arn
 
-  lifecycle {
-    ignore_changes = [
-      value
-    ]
-  }
+  # lifecycle {
+  #   ignore_changes = [
+  #     value
+  #   ]
+  # }
 }
-
 
 locals {
   # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
@@ -36,6 +36,11 @@ resource "aws_db_snapshot" "create_rds_snapshot" {
   db_instance_identifier = "test"
   db_snapshot_identifier = local.snapshot_identifier
 }
+
+# resource "dockerless_remote_image" "alpine_latest" {
+#   source = "alpine:latest"
+#   target = "${aws_ecr_repository.this.repository_url}:latest"
+# }
 
 # resource "null_resource" "create_rds_snapshot" {
 #   triggers = {
