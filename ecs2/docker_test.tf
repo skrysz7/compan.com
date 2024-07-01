@@ -37,7 +37,7 @@ resource "null_resource" "create_rds_snapshot" {
     command = <<EOT
       aws rds create-db-snapshot --region eu-central-1 \
       --db-instance-identifier "test" \
-      --db-snapshot-identifier ${local.snapshot_identifier}
+      --db-snapshot-identifier "test-version-upgrade-${local.snapshot_timestamp}-${var.container_image_version}"
     EOT
   }
 }
