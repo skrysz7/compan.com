@@ -1,4 +1,5 @@
 resource "aws_ssm_parameter" "rds_db_snapshot" {
+  count  = var.rollback == "no" ? 1 : 0
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
   value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
@@ -13,6 +14,7 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
 
 # Paramter store to store latest working image version in case of rollback
 resource "aws_ssm_parameter" "nexus_image_version" {
+  count  = var.rollback == "no" ? 1 : 0
   name   = "/nexus/image/version"
   type   = "SecureString"
   value  = var.container_image_version
@@ -33,6 +35,7 @@ locals {
 }
 
 resource "aws_db_snapshot" "create_rds_snapshot" {
+  count                  = var.rollback == "no" ? 1 : 0
   db_instance_identifier = "test"
   #db_snapshot_identifier = local.snapshot_identifier
   db_snapshot_identifier = "test-1"
