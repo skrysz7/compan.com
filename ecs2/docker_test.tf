@@ -59,7 +59,7 @@ resource "null_resource" "parameter_store_image" {
       TASK_ARN=$(aws ecs list-tasks --region $REGION --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --query 'taskArns[0]' --output text)
       TASK_DEFINITION_ARN=$(aws ecs describe-tasks --region $REGION --cluster $CLUSTER_NAME --tasks $TASK_ARN --query 'tasks[0].taskDefinitionArn' --output text)
       IMAGE_NAME=$(aws ecs describe-task-definition --region $REGION --task-definition $TASK_DEFINITION_ARN --query 'taskDefinition.containerDefinitions[0].image' --output text)
-      aws ssm put-parameter --region $REGION --name $PARAMETER_NAME --value $IMAGE_NAME --type "String" --overwrite
+      aws ssm put-parameter --region $REGION --name $PARAMETER_NAME --value $IMAGE_NAME --type "SecureString" --overwrite
     EOT
   }
   depends_on = [
@@ -75,7 +75,7 @@ resource "null_resource" "parameter_store_rds" {
   provisioner "local-exec" {
     command = <<EOT
       REGION="eu-central-1"
-      aws ssm put-parameter --region $REGION --name ${aws_ssm_parameter.rds_db_snapshot.name} --value ${local.snapshot_identifier} --type String --overwrite
+      aws ssm put-parameter --region $REGION --name ${aws_ssm_parameter.rds_db_snapshot.name} --value ${local.snapshot_identifier} --type SecureString --overwrite
     EOT
   }
   depends_on = [
