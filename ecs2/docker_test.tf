@@ -9,7 +9,7 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
   value  = aws_db_snapshot.create_rds_snapshot[0].db_snapshot_identifier
 
   #value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
-  key_id = aws_kms_key.key.arn
+  #key_id = aws_kms_key.key.arn
 
   # lifecycle {
   #   ignore_changes = [
@@ -25,7 +25,7 @@ resource "aws_ssm_parameter" "nexus_image_version" {
   type   = "SecureString"
   value  = var.container_image_version
   #value  = "CHANGE-ME"
-  key_id = aws_kms_key.key.arn
+  #key_id = aws_kms_key.key.arn
 
   lifecycle {
     ignore_changes = [
