@@ -1,5 +1,4 @@
 resource "aws_ssm_parameter" "rds_db_snapshot" {
-  count  = var.rollback == "no" ? 1 : 0
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
   value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
