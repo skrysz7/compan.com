@@ -46,10 +46,10 @@ resource "aws_db_snapshot" "create_rds_snapshot" {
   db_snapshot_identifier = local.snapshot_identifier
 }
 
-resource "dockerless_remote_image" "alpine_latest" {
-  source = "alpine:latest"
-  target = "${aws_ecr_repository.this.repository_url}:latest"
-}
+# resource "dockerless_remote_image" "alpine_latest" {
+#   source = "alpine:latest"
+#   target = "${aws_ecr_repository.this.repository_url}:latest"
+# }
 
 # resource "null_resource" "create_rds_snapshot" {
 #   triggers = {
@@ -107,18 +107,18 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   target = "${aws_ecr_repository.this.repository_url}:latest"
 # }
 
-terraform { 
-  required_providers {
-    # aws = {
-    #   source  = "hashicorp/aws"
-    #   version = "~> 5.52"
-    # }
-    dockerless = {
-      source  = "nullstone-io/dockerless"
-      version = "~> 0.1.1"
-    }
-  }
-}
+# terraform { 
+#   required_providers {
+#     # aws = {
+#     #   source  = "hashicorp/aws"
+#     #   version = "~> 5.52"
+#     # }
+#     dockerless = {
+#       source  = "nullstone-io/dockerless"
+#       version = "~> 0.1.1"
+#     }
+#   }
+# }
 
 # provider "aws" {
 #    region = "eu-central-1"
