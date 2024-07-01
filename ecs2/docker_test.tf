@@ -7,9 +7,7 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
   value  = aws_db_snapshot.create_rds_snapshot[0].db_snapshot_identifier
-  lifecycle {
-    ignore_changes = [name, type, value]
-  }
+
   # value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
   # key_id = aws_kms_key.key.arn
 
@@ -22,7 +20,7 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
 
 # Paramter store to store latest working image version in case of rollback
 resource "aws_ssm_parameter" "nexus_image_version" {
-  count  = var.rollback ? 0 : 1
+  count  = var.rollback ? 1 : 0
   name   = "/nexus/image/version"
   type   = "SecureString"
   value  = var.container_image_version
@@ -49,9 +47,6 @@ resource "aws_db_snapshot" "create_rds_snapshot" {
   count                  = var.rollback ? 0 : 1
   db_instance_identifier = "test"
   db_snapshot_identifier = local.snapshot_identifier
-  lifecycle {
-    ignore_changes = [db_instance_identifier, db_snapshot_identifier]
-  }
 }
 
 # resource "dockerless_remote_image" "alpine_latest" {
