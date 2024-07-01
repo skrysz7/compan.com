@@ -2,11 +2,11 @@
 #   count = var.rollback == "no" ? 1 : 0
 # }
 
-resource "aws_ssm_parameter" "rds_db_snapshot" {
-  count  = var.rollback ? 0 : 1
-  name   = "/nexus/rds-db-snapshot/name"
-  type   = "SecureString"
-  value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
+# resource "aws_ssm_parameter" "rds_db_snapshot" {
+#   count  = var.rollback ? 0 : 1
+#   name   = "/nexus/rds-db-snapshot/name"
+#   type   = "SecureString"
+#   value  = aws_db_snapshot.create_rds_snapshot[0].db_snapshot_identifier
 
   # value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
   # key_id = aws_kms_key.key.arn
@@ -16,14 +16,14 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
   #     value
   #   ]
   # }
-}
+# }
 
 # Paramter store to store latest working image version in case of rollback
-resource "aws_ssm_parameter" "nexus_image_version" {
-  count  = var.rollback ? 1 : 0
-  name   = "/nexus/image/version"
-  type   = "SecureString"
-  value  = var.container_image_version
+# resource "aws_ssm_parameter" "nexus_image_version" {
+#   count  = var.rollback ? 1 : 0
+#   name   = "/nexus/image/version"
+#   type   = "SecureString"
+#   value  = var.container_image_version
   #value  = "CHANGE-ME"
   #key_id = aws_kms_key.key.arn
 
@@ -32,19 +32,19 @@ resource "aws_ssm_parameter" "nexus_image_version" {
   #     value
   #   ]
   # }
-}
+# }
 
-locals {
-  # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
-  snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
-  snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}"
-}
+# locals {
+#   # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
+#   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
+#   snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}"
+# }
 
-resource "aws_db_snapshot" "create_rds_snapshot" {
-  count                  = var.rollback ? 0 : 1
-  db_instance_identifier = "test"
-  db_snapshot_identifier = local.snapshot_identifier
-}
+# resource "aws_db_snapshot" "create_rds_snapshot" {
+#   count                  = var.rollback ? 0 : 1
+#   db_instance_identifier = "test"
+#   db_snapshot_identifier = local.snapshot_identifier
+# }
 
 # resource "dockerless_remote_image" "alpine_latest" {
 #   source = "alpine:latest"
