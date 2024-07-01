@@ -7,18 +7,16 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
   value  = aws_db_snapshot.create_rds_snapshot[0].db_snapshot_identifier
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   #value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
   #key_id = aws_kms_key.key.arn
 
-  # lifecycle {
-  #   ignore_changes = [
-  #     value
-  #   ]
-  # }
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 #Paramter store to store latest working image version in case of rollback
@@ -29,7 +27,7 @@ resource "aws_ssm_parameter" "nexus_image_version" {
   value  = var.container_image_version
 
   lifecycle {
-    prevent_destroy = true
+    ignore_changes = all
   }
 }
 
@@ -45,7 +43,7 @@ resource "aws_db_snapshot" "create_rds_snapshot" {
   db_instance_identifier = "test"
   db_snapshot_identifier = local.snapshot_identifier
   lifecycle {
-    prevent_destroy = true
+    ignore_changes = all
   }
 }
 
