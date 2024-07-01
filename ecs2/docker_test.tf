@@ -107,18 +107,18 @@ resource "dockerless_remote_image" "alpine_latest" {
 #   target = "${aws_ecr_repository.this.repository_url}:latest"
 # }
 
-# terraform { 
-#   required_providers {
-#     # aws = {
-#     #   source  = "hashicorp/aws"
-#     #   version = "~> 5.52"
-#     # }
-#     dockerless = {
-#       source  = "nullstone-io/dockerless"
-#       version = "~> 0.1.1"
-#     }
-#   }
-# }
+terraform { 
+  required_providers {
+    # aws = {
+    #   source  = "hashicorp/aws"
+    #   version = "~> 5.52"
+    # }
+    dockerless = {
+      source  = "nullstone-io/dockerless"
+      version = "~> 0.1.1"
+    }
+  }
+}
 
 # provider "aws" {
 #    region = "eu-central-1"
