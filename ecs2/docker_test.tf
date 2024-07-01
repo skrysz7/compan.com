@@ -1,10 +1,15 @@
+resource "null_resource" "manage_creation" {
+  count = var.rollback == "no" ? 1 : 0
+}
+
 resource "aws_ssm_parameter" "rds_db_snapshot" {
   count  = var.rollback == "no" ? 1 : 0
   name   = "/nexus/rds-db-snapshot/name"
   type   = "SecureString"
   value  = aws_db_snapshot.create_rds_snapshot[0].db_snapshot_identifier
+  depends_on = [null_resource.manage_creation]
   lifecycle {
-    prevent_destroy = true
+    ignore_changes = [name, type, value]
   }
   #value  = aws_db_snapshot.create_rds_snapshot.db_snapshot_identifier
   #key_id = aws_kms_key.key.arn
@@ -45,8 +50,9 @@ resource "aws_db_snapshot" "create_rds_snapshot" {
   count                  = var.rollback == "no" ? 1 : 0
   db_instance_identifier = "test"
   db_snapshot_identifier = local.snapshot_identifier
+  depends_on             = [null_resource.manage_creation]
   lifecycle {
-    prevent_destroy = true
+    ignore_changes = [db_instance_identifier, db_snapshot_identifier]
   }
 }
 
