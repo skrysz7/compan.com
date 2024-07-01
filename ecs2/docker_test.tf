@@ -24,9 +24,6 @@ resource "aws_ssm_parameter" "nexus_image_version" {
   name   = "/nexus/image/version"
   type   = "SecureString"
   value  = var.container_image_version
-  lifecycle {
-    prevent_destroy = true
-  }
   #value  = "CHANGE-ME"
   #key_id = aws_kms_key.key.arn
 
