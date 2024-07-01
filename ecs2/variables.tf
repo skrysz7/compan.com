@@ -6,6 +6,6 @@ variable "container_image_version" {
 
 variable "rollback" {
   description = "Flag to control the creation of the DB snapshot"
-  type    = string
-  default = "yes"
+  type    = bool
+  default = true
 }
