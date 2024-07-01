@@ -15,7 +15,7 @@ resource "aws_ssm_parameter" "rds_db_snapshot" {
 
 # Paramter store to store latest working image version in case of rollback
 resource "aws_ssm_parameter" "nexus_image_version" {
-  count  = var.rollback == "no" ? 1 : 0
+  count  = var.rollback == "yes" ? 1 : 0
   name   = "/nexus/image/version"
   type   = "SecureString"
   value  = var.container_image_version
