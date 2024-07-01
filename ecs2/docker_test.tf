@@ -29,15 +29,18 @@ resource "aws_ssm_parameter" "nexus_image_version" {
 locals {
   # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
-  snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}-${var.container_image_version}"
+  snapshot_identifier = "test-version-upgrade-${local.snapshot_timestamp}"
 }
 
 resource "null_resource" "create_rds_snapshot" {
+  triggers = {
+    container_image_version = var.container_image_version
+  }
   provisioner "local-exec" {
     command = <<EOT
       aws rds create-db-snapshot --region eu-central-1 \
       --db-instance-identifier "test" \
-      --db-snapshot-identifier "test-version-upgrade-${local.snapshot_timestamp}-${var.container_image_version}"
+      --db-snapshot-identifier ${local.snapshot_identifier}
     EOT
   }
 }
