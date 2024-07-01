@@ -24,15 +24,12 @@ resource "aws_ssm_parameter" "nexus_image_version" {
   name   = "/nexus/image/version"
   type   = "SecureString"
   value  = var.container_image_version
-  #value  = "CHANGE-ME"
-  #key_id = aws_kms_key.key.arn
 
   lifecycle {
-    ignore_changes = [
-      value
-    ]
+    prevent_destroy = true
   }
 }
+
 
 locals {
   # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
