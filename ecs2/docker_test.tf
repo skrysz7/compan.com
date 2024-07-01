@@ -46,6 +46,9 @@ resource "null_resource" "create_rds_snapshot" {
 }
 
 resource "null_resource" "parameter_store_image" {
+  triggers = {
+    container_image_version = var.container_image_version
+  }
   provisioner "local-exec" {
     command = <<EOT
       CLUSTER_NAME=${aws_ecs_cluster.main.name}
@@ -66,6 +69,9 @@ resource "null_resource" "parameter_store_image" {
 
 
 resource "null_resource" "parameter_store_rds" {
+  triggers = {
+    container_image_version = var.container_image_version
+  }
   provisioner "local-exec" {
     command = <<EOT
       REGION="eu-central-1"

@@ -96,8 +96,10 @@ resource "aws_ecs_service" "main" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.hello_world.arn
-  desired_count   = 1 # Adjust desired count as needed
+  desired_count   = 2 # Adjust desired count as needed
   launch_type     = "FARGATE"
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
 
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
@@ -110,12 +112,12 @@ resource "aws_ecs_service" "main" {
     security_groups = [aws_security_group.web_sg.id]
     assign_public_ip = true
   }
-  lifecycle {
-    ignore_changes = [
-      #desired_count,   #Can be changed by autoscaling
-      task_definition #Can be changed by deployments (CodeDeploy)
-    ]
-  }
+  # lifecycle {
+  #   ignore_changes = [
+  #     #desired_count,   #Can be changed by autoscaling
+  #     task_definition #Can be changed by deployments (CodeDeploy)
+  #   ]
+  # }
 }
 
 # ALB
