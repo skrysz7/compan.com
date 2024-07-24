@@ -23,16 +23,26 @@ def update_parameter_store_ecs(cluster_name):
     if not task_arns:
         print("No running tasks found in the cluster.")
     else:
-        # Describe the first task to get detailed information
-        first_task_arn = task_arns[0]
-        response = ecs.describe_tasks(cluster=cluster_name, tasks=[first_task_arn])
+        # Describe the tasks to get detailed information
+        response = ecs.describe_tasks(cluster=cluster_name, tasks=task_arns)
         tasks = response['tasks']
 
-        # Extract and print the image information from the first task's container definitions
-        first_task = tasks[0]
-        for container in first_task['containers']:
-            image = container['image']
-            print(f"Container Name: {container['name']}, Image: {image}")
+        # Extract and print the image information from the container definitions
+        for task in tasks:
+            for container in task['containers']:
+                image = container['image']
+                print(f"Container Name: {container['name']}, Image: {image}")
+    # else:
+    #     # Describe the first task to get detailed information
+    #     first_task_arn = task_arns[0]
+    #     response = ecs.describe_tasks(cluster=cluster_name, tasks=[first_task_arn])
+    #     tasks = response['tasks']
+
+    #     # Extract and print the image information from the first task's container definitions
+    #     first_task = tasks[0]
+    #     for container in first_task['containers']:
+    #         image = container['image']
+    #         print(f"Container Name: {container['name']}, Image: {image}")
 
     ssm = boto3.client('ssm',region_name="eu-central-1")
     response = ssm.put_parameter(Name='/ecr/image/name',Value=image,Overwrite=True)
