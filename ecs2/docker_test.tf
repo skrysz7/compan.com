@@ -27,8 +27,9 @@ provider "dockerless" {
   }
 }
 resource "dockerless_remote_image" "nginxdemos" {
-  source = "nginxdemos/hello:${var.container_image_version}"
-  target = "${var.container_ecr_url}:${var.container_image_version}"
+  count    = var.rollback ? 0 : 1
+  source   = "nginxdemos/hello:${var.container_image_version}"
+  target   = "${var.container_ecr_url}:${var.container_image_version}"
 }
 resource "null_resource" "boto3" {
   # Triggered only when container_image_version changes
