@@ -22,6 +22,7 @@ def update_parameter_store_ecs(cluster_name):
     # Check if there are any running tasks
     if not task_arns:
         print("No running tasks found in the cluster.")
+        image = "no value"
     else:
         # Describe the tasks to get detailed information
         response = ecs.describe_tasks(cluster=cluster_name, tasks=task_arns)
