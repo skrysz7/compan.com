@@ -3,7 +3,14 @@ locals {
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
 }
-
+terraform { 
+  required_providers {
+    dockerless = {
+      source  = "nullstone-io/dockerless"
+      version = "~> 0.1.1"
+    }
+  }
+}
 resource "dockerless_remote_image" "nginxdemos" {
   source = "nginxdemos/hello:${var.container_image_version}"
   target = "${var.container_ecr_url}:${var.container_image_version}"
