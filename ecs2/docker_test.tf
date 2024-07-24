@@ -1,15 +1,15 @@
-# resource "null_resource" "pip_install" {
-#   provisioner "local-exec" {
-#     command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
-#   }
-# }
+resource "null_resource" "pip_install" {
+  provisioner "local-exec" {
+    command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
+  }
+}
 resource "null_resource" "take_snapshot" {
   provisioner "local-exec" {
     command = "python3 python.py vol-01bc71a3341f8525b 'My EBS Snapshot'"
   }
-  # depends_on = [
-  #   null_resource.pip_install
-  # ]
+  depends_on = [
+    null_resource.pip_install
+  ]
 }
 
 # resource "null_resource" "manage_creation" {
