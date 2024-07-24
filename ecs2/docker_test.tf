@@ -13,7 +13,7 @@ resource "null_resource" "pip_install" {
     command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
   }
   provisioner "local-exec" {
-    command = "python3 ./ecs2/python.py database ${local.snapshot_identifier}"
+    command = "python3 ./ecs2/python.py database ${local.snapshot_identifier} ${aws_ecs_cluster.main.name}"
   } 
 }
 # resource "null_resource" "take_snapshot" {
