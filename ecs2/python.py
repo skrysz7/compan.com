@@ -52,7 +52,7 @@ def copy_image(container_image_version,container_ecr_url):
     docker_client.images.push(ecr_repository)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 6:
         print("Usage: python3 python.py <DBSnapshotId> <DBInstanceId> <cluster_name>" )
         sys.exit(1)
     
