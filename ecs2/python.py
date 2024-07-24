@@ -1,6 +1,6 @@
 import boto3
 import sys
-import docker
+# import docker
 
 def take_db_snapshot(DBSnapshotId, DBInstanceId):
     rds = boto3.client('rds',region_name="eu-central-1")
@@ -47,19 +47,19 @@ def update_parameter_store_ecs(cluster_name):
     ssm = boto3.client('ssm',region_name="eu-central-1")
     response = ssm.put_parameter(Name='/ecr/image/name',Value=image,Overwrite=True)
 
-def copy_image(container_image_version,container_ecr_url):
-    ecr           = boto3.client('ecr',region_name="eu-central-1")
-    docker_client = docker.from_env()
-    source_image  = f"nginxdemos/hello:{container_image_version}"
-    ecr_repository = f"{container_ecr_url}:{container_image_version}"
-    docker_client.images.pull(source_image)
-    docker_client.images.get(source_image).tag(ecr_repository)
-    response = ecr.get_authorization_token()
-    auth_data = response['authorizationData'][0]
-    username, password = auth_data['authorizationToken'].decode('base64').split(':')
-    registry = auth_data['proxyEndpoint']
-    docker_client.login(username=username, password=password, registry=registry)
-    docker_client.images.push(ecr_repository)
+# def copy_image(container_image_version,container_ecr_url):
+#     ecr           = boto3.client('ecr',region_name="eu-central-1")
+#     docker_client = docker.from_env()
+#     source_image  = f"nginxdemos/hello:{container_image_version}"
+#     ecr_repository = f"{container_ecr_url}:{container_image_version}"
+#     docker_client.images.pull(source_image)
+#     docker_client.images.get(source_image).tag(ecr_repository)
+#     response = ecr.get_authorization_token()
+#     auth_data = response['authorizationData'][0]
+#     username, password = auth_data['authorizationToken'].decode('base64').split(':')
+#     registry = auth_data['proxyEndpoint']
+#     docker_client.login(username=username, password=password, registry=registry)
+#     docker_client.images.push(ecr_repository)
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
