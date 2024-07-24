@@ -72,7 +72,7 @@ resource "aws_ecs_task_definition" "hello_world" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
-  execution_role_arn       = "arn:aws:iam::342023131128:role/Administrator"
+  #execution_role_arn       = "arn:aws:iam::342023131128:role/Administrator"
 
   container_definitions = jsonencode([
     {
