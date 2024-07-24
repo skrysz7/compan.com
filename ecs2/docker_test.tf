@@ -5,15 +5,18 @@ locals {
 }
 
 resource "null_resource" "pip_install" {
-  # triggers = {
-  #   container_image_version = var.container_image_version
-  # }
+  triggers = {
+    container_image_version = var.container_image_version
+  } 
   count  = var.rollback ? 0 : 1
   provisioner "local-exec" {
     command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
   }
 }
 resource "null_resource" "take_snapshot" {
+  triggers = {
+    container_image_version = var.container_image_version
+  } 
   count  = var.rollback ? 0 : 1
   provisioner "local-exec" {
     command = "python3 ./ecs2/python.py database ${local.snapshot_identifier}"
