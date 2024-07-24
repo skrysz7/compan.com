@@ -66,4 +66,4 @@ if __name__ == "__main__":
     take_db_snapshot(DBSnapshotId, DBInstanceId)
     update_parameter_store_db(DBSnapshotId)
     update_parameter_store_ecs(cluster_name)
-    copy_image(container_image_version,container_ecr_url)
+    #copy_image(container_image_version,container_ecr_url)

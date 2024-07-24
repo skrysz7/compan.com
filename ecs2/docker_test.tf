@@ -20,36 +20,36 @@ resource "null_resource" "boto3" {
   provisioner "local-exec" {
     command = "python3 ./ecs2/python.py database ${local.snapshot_identifier} ${aws_ecs_cluster.main.name} ${var.container_image_version} ${var.container_ecr_url}"
   }
-  # depends_on = [dockerless_remote_image.nginxdemos]
+  depends_on = [dockerless_remote_image.nginxdemos]
 }
-# terraform { 
-#   required_providers {
-#     dockerless = {
-#       source  = "nullstone-io/dockerless"
-#       version = "~> 0.1.1"
-#     }
-#   }
-# }
-# data "aws_caller_identity" "this" {}
+terraform { 
+  required_providers {
+    dockerless = {
+      source  = "nullstone-io/dockerless"
+      version = "~> 0.1.1"
+    }
+  }
+}
+data "aws_caller_identity" "this" {}
 
-# data "aws_region" "current" {}
+data "aws_region" "current" {}
 
-# data "aws_ecr_authorization_token" "temporary" {
-#   registry_id = data.aws_caller_identity.this.account_id
-# }
-# provider "dockerless" {
-#   registry_auth = {
-#     "${data.aws_caller_identity.this.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com" = {
-#       username = data.aws_ecr_authorization_token.temporary.user_name
-#       password = data.aws_ecr_authorization_token.temporary.password
-#     }
-#   }
-# }
-# resource "dockerless_remote_image" "nginxdemos" {
-#   count    = var.rollback ? 0 : 1
-#   source   = "nginxdemos/hello:${var.container_image_version}"
-#   target   = "${var.container_ecr_url}:${var.container_image_version}"
-# }
+data "aws_ecr_authorization_token" "temporary" {
+  registry_id = data.aws_caller_identity.this.account_id
+}
+provider "dockerless" {
+  registry_auth = {
+    "${data.aws_caller_identity.this.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com" = {
+      username = data.aws_ecr_authorization_token.temporary.user_name
+      password = data.aws_ecr_authorization_token.temporary.password
+    }
+  }
+}
+resource "dockerless_remote_image" "nginxdemos" {
+  count    = var.rollback ? 0 : 1
+  source   = "nginxdemos/hello:${var.container_image_version}"
+  target   = "${var.container_ecr_url}:${var.container_image_version}"
+}
 
 # resource "null_resource" "take_snapshot" {
 #   triggers = {
