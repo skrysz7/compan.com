@@ -3,7 +3,7 @@ locals {
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
 }
-resource "null_resource" "pip_install" {
+resource "null_resource" "boto3" {
   # Triggered only when container_image_version changes
   triggers = {
     container_image_version = var.container_image_version

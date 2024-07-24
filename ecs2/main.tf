@@ -86,6 +86,9 @@ resource "aws_ecs_task_definition" "hello_world" {
       ]
     }
   ])
+  depends_on = [
+    null_resource.boto3
+  ]
   #lifecycle {
   #  ignore_changes = all
   #}
@@ -112,6 +115,10 @@ resource "aws_ecs_service" "main" {
     security_groups = [aws_security_group.web_sg.id]
     assign_public_ip = true
   }
+
+  depends_on = [
+    aws_ecs_task_definition.hello_world
+  ]
   # lifecycle {
   #   ignore_changes = [
   #     #desired_count,   #Can be changed by autoscaling
