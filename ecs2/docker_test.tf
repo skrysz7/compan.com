@@ -1,14 +1,20 @@
-resource "null_resource" "pip_install1" {
+locals {
+  # Generating current date and time in the format: YYYY-MM-DD-HH-MM-SS 
+  snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
+  snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
+}
+
+resource "null_resource" "pip_install" {
   provisioner "local-exec" {
     command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
   }
 }
 resource "null_resource" "take_snapshot" {
   provisioner "local-exec" {
-    command = "python3 ./ecs2/python.py vol-01bc71a3341f8525b 'My EBS Snapshot'"
+    command = "python3 ./ecs2/python.py database ${local.snapshot_identifier}"
   }
   depends_on = [
-    null_resource.pip_install1
+    null_resource.pip_install
   ]
 }
 
