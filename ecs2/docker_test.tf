@@ -5,7 +5,7 @@ locals {
 }
 #Paramter store to store latest working image version in case of rollback
 resource "aws_ssm_parameter" "nexus_image_version" {
-  name   = "/nexus/image/version2"
+  name   = "/nexus/image/version"
   type   = "SecureString"
   value  = var.container_image_version
 
@@ -14,9 +14,11 @@ resource "aws_ssm_parameter" "nexus_image_version" {
   }
 }
 resource "null_resource" "pip_install" {
+  # Triggered only when container_image_version change
   triggers = {
     container_image_version = var.container_image_version
-  } 
+  }
+  # Triggered only when rollback is set to false
   count  = var.rollback ? 0 : 1
   provisioner "local-exec" {
     command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
