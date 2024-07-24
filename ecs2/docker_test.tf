@@ -3,7 +3,16 @@ locals {
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
 }
+#Paramter store to store latest working image version in case of rollback
+resource "aws_ssm_parameter" "nexus_image_version" {
+  name   = "/nexus/image/version2"
+  type   = "SecureString"
+  value  = var.container_image_version
 
+  lifecycle {
+    ignore_changes = all
+  }
+}
 resource "null_resource" "pip_install" {
   triggers = {
     container_image_version = var.container_image_version
@@ -50,17 +59,7 @@ resource "null_resource" "pip_install" {
 #   }
 # }
 
-#Paramter store to store latest working image version in case of rollback
-resource "aws_ssm_parameter" "nexus_image_version" {
-  #count  = var.rollback ? 1 : 0
-  name   = "/nexus/image/version"
-  type   = "SecureString"
-  value  = var.container_image_version
 
-  lifecycle {
-    ignore_changes = all
-  }
-}
 
 
 # locals {
