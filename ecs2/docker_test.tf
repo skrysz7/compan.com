@@ -3,29 +3,29 @@ locals {
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
 }
-# terraform { 
-#   required_providers {
-#     dockerless = {
-#       source  = "nullstone-io/dockerless"
-#       version = "~> 0.1.1"
-#     }
-#   }
-# }
-# data "aws_caller_identity" "this" {}
+terraform { 
+  required_providers {
+    dockerless = {
+      source  = "nullstone-io/dockerless"
+      version = "~> 0.1.1"
+    }
+  }
+}
+data "aws_caller_identity" "this" {}
 
-# data "aws_region" "current" {}
+data "aws_region" "current" {}
 
-# data "aws_ecr_authorization_token" "temporary" {
-#   registry_id = data.aws_caller_identity.this.account_id
-# }
-# provider "dockerless" {
-#   registry_auth = {
-#     "${data.aws_caller_identity.this.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com" = {
-#       username = data.aws_ecr_authorization_token.temporary.user_name
-#       password = data.aws_ecr_authorization_token.temporary.password
-#     }
-#   }
-# }
+data "aws_ecr_authorization_token" "temporary" {
+  registry_id = data.aws_caller_identity.this.account_id
+}
+provider "dockerless" {
+  registry_auth = {
+    "${data.aws_caller_identity.this.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com" = {
+      username = data.aws_ecr_authorization_token.temporary.user_name
+      password = data.aws_ecr_authorization_token.temporary.password
+    }
+  }
+}
 # resource "dockerless_remote_image" "nginxdemos" {
 #   count    = var.rollback ? 0 : 1
 #   source   = "nginxdemos/hello:${var.container_image_version}"
