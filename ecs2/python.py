@@ -11,7 +11,7 @@ def take_snapshot(volume_id, snapshot_description):
 
 def update_parameter_store(snapshot_id):
     ssm = boto3.client('ssm',region_name="eu-central-1")
-    response = ssm.put_parameter(Name='/rds/snapshot/name',Value=snapshot_id)
+    response = ssm.put_parameter(Name='/rds/snapshot/name',Value=snapshot_id,Overwrite=True)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
