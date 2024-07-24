@@ -3,6 +3,25 @@ locals {
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
 }
+resource "null_resource" "boto3" {
+  # Triggered only when container_image_version changes
+  triggers = {
+    container_image_version = var.container_image_version
+  }
+  # Triggered only when rollback is set to false; the resource is removed when rollback is true which is fine
+  count  = var.rollback ? 0 : 1
+  provisioner "local-exec" {
+    command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
+  }
+
+  provisioner "local-exec" {
+    command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org docker"
+  }
+  provisioner "local-exec" {
+    command = "python3 ./ecs2/python.py database ${local.snapshot_identifier} ${aws_ecs_cluster.main.name} ${var.container_image_version} ${var.container_ecr_url}"
+  }
+  # depends_on = [dockerless_remote_image.nginxdemos]
+}
 # terraform { 
 #   required_providers {
 #     dockerless = {
@@ -31,21 +50,7 @@ locals {
 #   source   = "nginxdemos/hello:${var.container_image_version}"
 #   target   = "${var.container_ecr_url}:${var.container_image_version}"
 # }
-resource "null_resource" "boto3" {
-  # Triggered only when container_image_version changes
-  triggers = {
-    container_image_version = var.container_image_version
-  }
-  # Triggered only when rollback is set to false; the resource is removed when rollback is true which is fine
-  count  = var.rollback ? 0 : 1
-  provisioner "local-exec" {
-    command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
-  }
-  provisioner "local-exec" {
-    command = "python3 ./ecs2/python.py database ${local.snapshot_identifier} ${aws_ecs_cluster.main.name} ${var.container_image_version} ${var.container_ecr_url}"
-  }
-  # depends_on = [dockerless_remote_image.nginxdemos]
-}
+
 # resource "null_resource" "take_snapshot" {
 #   triggers = {
 #     container_image_version = var.container_image_version
