@@ -3,22 +3,12 @@ locals {
   snapshot_timestamp = formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())
   snapshot_identifier = "nexus-version-upgrade-${local.snapshot_timestamp}"
 }
-#Paramter store to store latest working image version in case of rollback
-resource "aws_ssm_parameter" "nexus_image_version" {
-  name   = "/nexus/image/version"
-  type   = "SecureString"
-  value  = var.container_image_version
-
-  lifecycle {
-    ignore_changes = all
-  }
-}
 resource "null_resource" "pip_install" {
-  # Triggered only when container_image_version change
+  # Triggered only when container_image_version changes
   triggers = {
     container_image_version = var.container_image_version
   }
-  # Triggered only when rollback is set to false
+  # Triggered only when rollback is set to false; the resource is removed when rollback is true which is fine
   count  = var.rollback ? 0 : 1
   provisioner "local-exec" {
     command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org boto3"
@@ -39,7 +29,16 @@ resource "null_resource" "pip_install" {
 #     null_resource.pip_install
 #   ]
 # }
+#Paramter store to store latest working image version in case of rollback
+resource "aws_ssm_parameter" "nexus_image_version" {
+  name   = "/nexus/image/version"
+  type   = "String"
+  value  = var.container_image_version
 
+  lifecycle {
+    ignore_changes = all
+  }
+}
 # resource "null_resource" "manage_creation" {
 #   count = var.rollback == "no" ? 1 : 0
 # }
