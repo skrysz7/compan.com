@@ -16,7 +16,7 @@ def update_parameter_store_db(DBSnapshotId):
 def update_parameter_store_ecs(cluster_name):
     ecs = boto3.client('ecs',region_name="eu-central-1")
     # List the running tasks in the cluster
-    response = ecs.list_tasks(cluster=cluster_name)
+    response = ecs.list_tasks(cluster=cluster_name,desiredStatus='RUNNING')
     task_arns = response['taskArns']
     # Check if there are any running tasks
     if not task_arns:
