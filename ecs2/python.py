@@ -18,8 +18,8 @@ if __name__ == "__main__":
         print("Usage: python3 take_ebs_snapshot.py <DBSnapshotId> <DBInstanceId>")
         sys.exit(1)
     
-    DBSnapshotId = sys.argv[1]
-    DBInstanceId = sys.argv[2]
+    DBInstanceId = sys.argv[1]
+    DBSnapshotId = sys.argv[2]
     
     
     take_db_snapshot(DBSnapshotId, DBInstanceId)
