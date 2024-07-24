@@ -1,13 +1,5 @@
-# take_ebs_snapshot.py
-
 import boto3
 import sys
-
-# def init_client(account_id, region):
-#     ec2_client = boto3.client(
-#         'ec2',        
-#         region_name=region,
-#     )
 
 def take_snapshot(volume_id, snapshot_description):
     ec2 = boto3.client('ec2',region_name="eu-central-1")
@@ -16,6 +8,10 @@ def take_snapshot(volume_id, snapshot_description):
         Description=snapshot_description
     )
     print(response)
+
+def update_parameter_store(snapshot_id):
+    ssm = boto3.client('ssm',region_name="eu-central-1")
+    response = ssm.put_parameter(Name='/rds/snapshot/name',Value=snapshot_id)
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
@@ -26,3 +22,4 @@ if __name__ == "__main__":
     snapshot_description = sys.argv[2]
     
     take_snapshot(volume_id, snapshot_description)
+    update_parameter_store('snaptest_id')
