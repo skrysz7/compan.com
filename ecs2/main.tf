@@ -91,9 +91,9 @@ resource "aws_ecs_task_definition" "hello_world" {
   lifecycle {
     create_before_destroy = true
   }
-  depends_on = [
-    null_resource.boto3
-  ]
+  # depends_on = [
+  #   null_resource.boto3
+  # ]
 }
 
 # ECS service
@@ -118,9 +118,9 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = true
   }
 
-  depends_on = [
-    aws_ecs_task_definition.hello_world
-  ]
+  # depends_on = [
+  #   aws_ecs_task_definition.hello_world
+  # ]
   # lifecycle {
   #   ignore_changes = [
   #     #desired_count,   #Can be changed by autoscaling
