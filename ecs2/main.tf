@@ -86,12 +86,12 @@ resource "aws_ecs_task_definition" "hello_world" {
       ]
     }
   ])
+  lifecycle {
+    create_before_destroy = true
+  }
   depends_on = [
     null_resource.boto3
   ]
-  #lifecycle {
-  #  ignore_changes = all
-  #}
 }
 
 # ECS service
