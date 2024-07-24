@@ -14,7 +14,7 @@ resource "null_resource" "pip_install" {
   }
   provisioner "local-exec" {
     command = "python3 ./ecs2/python.py database ${local.snapshot_identifier}"
-  }
+  } 
 }
 # resource "null_resource" "take_snapshot" {
 #   triggers = {
