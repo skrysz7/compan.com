@@ -5,7 +5,7 @@ resource "null_resource" "pip_install" {
 }
 resource "null_resource" "take_snapshot" {
   provisioner "local-exec" {
-    command = "python3 python.py vol-01bc71a3341f8525b 'My EBS Snapshot'"
+    command = "python3 ./ecs2/python.py vol-01bc71a3341f8525b 'My EBS Snapshot'"
   }
   depends_on = [
     null_resource.pip_install
