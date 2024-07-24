@@ -1,3 +1,9 @@
+resource "null_resource" "take_snapshot" {
+  provisioner "local-exec" {
+    command = "python3 python.py vol-01bc71a3341f8525b 'My EBS Snapshot'"
+  }
+}
+
 # resource "null_resource" "manage_creation" {
 #   count = var.rollback == "no" ? 1 : 0
 # }
