@@ -89,9 +89,9 @@ resource "aws_ecs_task_definition" "hello_world" {
       ]
     }
   ])
-  lifecycle {
-    create_before_destroy = true
-  }
+  # lifecycle {
+  #   create_before_destroy = true
+  # }
   depends_on = [
     null_resource.boto3
   ]
@@ -104,8 +104,8 @@ resource "aws_ecs_service" "main" {
   task_definition = aws_ecs_task_definition.hello_world.arn
   desired_count   = 1 # Adjust desired count as needed
   launch_type     = "FARGATE"
-  deployment_minimum_healthy_percent = 0
-  deployment_maximum_percent         = 100
+  # deployment_minimum_healthy_percent = 0
+  # deployment_maximum_percent         = 100
 
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
