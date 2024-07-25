@@ -16,7 +16,7 @@ resource "null_resource" "boto3" {
 
   # provisioner "local-exec" {
   #   command = "pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org docker"
-  # }
+  # } 
   provisioner "local-exec" {
     command = "python3 ./ecs2/python.py database ${local.snapshot_identifier} ${aws_ecs_cluster.main.name} ${var.container_image_version} ${var.container_ecr_url}"
   }
