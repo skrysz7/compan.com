@@ -77,8 +77,9 @@ resource "aws_ecs_task_definition" "hello_world" {
   container_definitions = jsonencode([
     {
       name  = "hello_world"
-      image = "nginxdemos/hello:${var.container_image_version}"
-      #image = "${var.container_ecr_url}:${var.container_image_version}"
+      #image = "nginxdemos/hello:${var.container_image_version}"
+      image = "sonatype/nexus3:${var.container_image_version}"
+      #image = "${var.container_ecr_url}:${var.container_image_version}" #NEEDS ENDPOINT
       essential = true
       portMappings = [
         {
@@ -101,7 +102,7 @@ resource "aws_ecs_service" "main" {
   name            = "hello-world-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.hello_world.arn
-  desired_count   = 2 # Adjust desired count as needed
+  desired_count   = 1 # Adjust desired count as needed
   launch_type     = "FARGATE"
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
