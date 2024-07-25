@@ -1,6 +1,6 @@
 variable "container_image_version" {
   type    = string
-  default = "3.70.1"
+  default = "0.3"
 }
 
 variable "rollback" { 

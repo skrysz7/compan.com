@@ -77,8 +77,8 @@ resource "aws_ecs_task_definition" "hello_world" {
   container_definitions = jsonencode([
     {
       name  = "hello_world"
-      #image = "nginxdemos/hello:${var.container_image_version}"
-      image = "sonatype/nexus3:${var.container_image_version}"
+      image = "nginxdemos/hello:${var.container_image_version}"
+      #image = "sonatype/nexus3:${var.container_image_version}"
       #image = "${var.container_ecr_url}:${var.container_image_version}" #NEEDS ENDPOINT
       essential = true
       portMappings = [
