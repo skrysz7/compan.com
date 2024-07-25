@@ -74,29 +74,49 @@ jobs:
     outputs:
       rollback: ${{ steps.check-rollback.outputs.rollback }}
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: pre-release
 
-      - name: Get commit message
-        id: get_commit_message
+      - name: Get the list of merged commits
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
-        shell: bash
+          # Get the commit range for the push event
+          COMMIT_RANGE=$(git rev-parse HEAD~1)..$(git rev-parse HEAD)
 
-      - name: Check for Rollback keyword
-        id: check-rollback
+          # Check the commit messages in the range
+          git log $COMMIT_RANGE --pretty=format:"%h - %s" > commit_messages.txt
+
+      - name: Check for "rollback" in commit messages
         run: |
-          if echo "$COMMIT_MESSAGE" | grep -q -i "rollback"; then
-            echo "Rollback keyword found in commit message."
-            echo "::set-output name=rollback::true"
+          if grep -iq "rollback" commit_messages.txt; then
+            echo "Error: Commit message contains the word 'rollback'"
+            exit 1
           else
-            echo "No Rollback keyword found in commit message."
-            echo "::set-output name=rollback::false"
+            echo "No 'rollback' found in commit messages."
           fi
-        shell: bash
+    # steps:
+    #   - name: Checkout code
+    #     uses: actions/checkout@v4
+    #     with:
+    #       ref: pre-release
+
+    #   - name: Get commit message
+    #     id: get_commit_message
+    #     run: |
+    #       COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+    #       echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+    #     shell: bash
+
+    #   - name: Check for Rollback keyword
+    #     id: check-rollback
+    #     run: |
+    #       if echo "$COMMIT_MESSAGE" | grep -q -i "rollback"; then
+    #         echo "Rollback keyword found in commit message."
+    #         echo "::set-output name=rollback::true"
+    #       else
+    #         echo "No Rollback keyword found in commit message."
+    #         echo "::set-output name=rollback::false"
+    #       fi
+    #     shell: bash
         
   build-image:
     runs-on: ubuntu-latest
