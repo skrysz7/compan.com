@@ -74,7 +74,7 @@ if __name__ == "__main__":
     container_ecr_url = sys.argv[5]
     
     
-    take_db_snapshot(DBSnapshotId, DBInstanceId)
-    update_parameter_store_db(DBSnapshotId)
+    #take_db_snapshot(DBSnapshotId, DBInstanceId)
+    #update_parameter_store_db(DBSnapshotId)
     update_parameter_store_ecs(cluster_name)
     #copy_image(container_image_version,container_ecr_url)
