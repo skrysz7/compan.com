@@ -13,6 +13,17 @@ env:
   CONFIG_DIRECTORY: "./"
   
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+      - name: Extract container_image_version
+        id: extract_version
+        run: |
+          version=$(grep -A 1 'variable "container_image_version"' variables.tf | grep -Po '(?<=default = ")[^"]*')
+          echo "container_image_version=$version" >> $GITHUB_ENV
+
   check-plan:
     runs-on: ubuntu-latest
     outputs:
