@@ -21,7 +21,7 @@ jobs:
       - name: Extract container_image_version
         id: extract_version
         run: |
-          version=$(grep -A 1 'variable "container_image_version"' variables.tf | grep -Po '(?<=default = ")[^"]*')
+          version=$(grep -A 1 'variable "container_image_version"' ecs2/variables.tf | grep -Po '(?<=default = ")[^"]*')
           echo "container_image_version=$version" >> $GITHUB_ENV
 
   check-plan:
