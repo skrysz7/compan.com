@@ -13,77 +13,77 @@ env:
   CONFIG_DIRECTORY: "./"
   
 jobs:
-  check-version:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v4
-      - name: Extract container_image_version
-        id: extract_version
-        run: |
-          version=$(grep -A 1 'variable "container_image_version"' ecs2/variables.tf | grep -Po '(?<=default = ")[^"]*')
-          echo "container_image_version=$version" >> $GITHUB_ENV
+  # check-version:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout main branch
+  #       uses: actions/checkout@v4
+  #     - name: Extract container_image_version
+  #       id: extract_version
+  #       run: |
+  #         version=$(grep -A 1 'variable "container_image_version"' ecs2/variables.tf | grep -Po '(?<=default = ")[^"]*')
+  #         echo "container_image_version=$version" >> $GITHUB_ENV
 
-  check-plan:
-    runs-on: ubuntu-latest
-    outputs:
-      proceed: ${{ steps.check-plan-changes.outputs.proceed }}
-    steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v4
-        with:
-          ref: main
+  # check-plan:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     proceed: ${{ steps.check-plan-changes.outputs.proceed }}
+  #   steps:
+  #     - name: Checkout main branch
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: main
           
-      - name: Upload Configuration
-        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.0
-        id: plan-upload
-        with:
-          workspace: ${{ env.TF_WORKSPACE }}
-          directory: ${{ env.CONFIG_DIRECTORY }}
-          speculative: true
+  #     - name: Upload Configuration
+  #       uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.0
+  #       id: plan-upload
+  #       with:
+  #         workspace: ${{ env.TF_WORKSPACE }}
+  #         directory: ${{ env.CONFIG_DIRECTORY }}
+  #         speculative: true
 
-      - name: Create Plan Run
-        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.0
-        id: plan-run
-        with:
-          workspace: ${{ env.TF_WORKSPACE }}
-          configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
-          plan_only: true
+  #     - name: Create Plan Run
+  #       uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.0
+  #       id: plan-run
+  #       with:
+  #         workspace: ${{ env.TF_WORKSPACE }}
+  #         configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
+  #         plan_only: true
 
-      - name: Get Plan Output
-        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.3.0
-        id: get-plan-output
-        with:
-          plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+  #     - name: Get Plan Output
+  #       uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.3.0
+  #       id: get-plan-output
+  #       with:
+  #         plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
 
-      - name: Check Plan Changes
-        id: check-plan-changes
-        run: |
-          add_changes=$(echo "${{ steps.get-plan-output.outputs.add }}")
-          change_changes=$(echo "${{ steps.get-plan-output.outputs.change }}")
-          destroy_changes=$(echo "${{ steps.get-plan-output.outputs.destroy }}")
+  #     - name: Check Plan Changes
+  #       id: check-plan-changes
+  #       run: |
+  #         add_changes=$(echo "${{ steps.get-plan-output.outputs.add }}")
+  #         change_changes=$(echo "${{ steps.get-plan-output.outputs.change }}")
+  #         destroy_changes=$(echo "${{ steps.get-plan-output.outputs.destroy }}")
 
-          if [ "$add_changes" -eq 0 ] && [ "$change_changes" -eq 0 ] && [ "$destroy_changes" -eq 0 ]; then
-            echo "No changes detected."
-            echo "::set-output name=proceed::true"
-          else
-            echo "Changes detected."
-          fi
-        shell: bash
+  #         if [ "$add_changes" -eq 0 ] && [ "$change_changes" -eq 0 ] && [ "$destroy_changes" -eq 0 ]; then
+  #           echo "No changes detected."
+  #           echo "::set-output name=proceed::true"
+  #         else
+  #           echo "Changes detected."
+  #         fi
+  #       shell: bash
         
-  set-app-to-read-only:
-    needs: check-plan
-    runs-on: ubuntu-latest
-    if: needs.check-plan.outputs.proceed == 'true'
-    steps:      
-      - name: Set nexus application to read-only
-        run: echo "setting app to read-only"
+  # set-app-to-read-only:
+  #   needs: check-plan
+  #   runs-on: ubuntu-latest
+  #   if: needs.check-plan.outputs.proceed == 'true'
+  #   steps:      
+  #     - name: Set nexus application to read-only
+  #       run: echo "setting app to read-only"
         
   check-if-rollback:
     runs-on: ubuntu-latest
-    needs: set-app-to-read-only
-    outputs:
-      rollback: ${{ steps.check-rollback.outputs.rollback }}
+    # needs: set-app-to-read-only
+    # outputs:
+    #   rollback: ${{ steps.check-rollback.outputs.rollback }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
